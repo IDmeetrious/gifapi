@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">GifApp</string>
+    <string name="next">Next</string>
+    <string name="refresh">Refresh</string>
+    <string name="gif_default_description">Gif default description</string>
+    <string name="developers_life">Developers Life</string>
+</resources>
