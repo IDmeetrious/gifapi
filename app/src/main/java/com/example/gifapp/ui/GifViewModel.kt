@@ -23,8 +23,14 @@ class GifViewModel : ViewModel() {
         val randomGif = repository.apiService.getRandom(true)
         randomGif.enqueue(object : Callback<Gif> {
             override fun onResponse(call: retrofit2.Call<Gif>, response: Response<Gif>) {
-                if (response.isSuccessful)
-                    Log.d(TAG, "${response.body()}")
+                if (response.isSuccessful){
+                    Log.d(TAG, "--> onResponse: Successful")
+                    Log.d(TAG, "--> id: ${response.body()?.id}")
+                    Log.d(TAG, "--> description: ${response.body()?.description}")
+                    Log.d(TAG, "--> gifURL: ${response.body()?.gifURL}")
+
+                    _randomGif.value = response.body()
+                }
             }
 
             override fun onFailure(call: retrofit2.Call<Gif>, t: Throwable) {
