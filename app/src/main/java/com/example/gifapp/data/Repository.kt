@@ -12,5 +12,5 @@ class Repository {
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
-    val apiService = retrofitClient.create(GifApi::class.java)
+    val apiService: GifApi = retrofitClient.create(GifApi::class.java)
 }

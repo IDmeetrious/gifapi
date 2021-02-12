@@ -8,7 +8,7 @@
     tools:context=".ui.GifActivity">
 
     <fragment
-        android:name="com.example.gifapp.ui.GifFragment"
+        android:name="com.example.gifapp.ui.GifPagerFragment"
         android:id="@+id/fragment_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

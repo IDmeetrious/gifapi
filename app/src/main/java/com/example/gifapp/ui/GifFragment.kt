@@ -1,49 +1,49 @@
 package com.example.gifapp.ui
 
-import android.os.Bundle
-import android.view.View
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.fragment.app.Fragment
-import com.bumptech.glide.Glide
 import com.example.gifapp.R
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 private const val TAG = "GifFragment"
 
-class GifFragment : Fragment(R.layout.fragment_gif) {
-
-    private val viewModel = GifViewModel()
+class GifFragment : Fragment(R.layout.fragment_gif_random) {
+/*
+    private val viewModel: GifViewModel by lazy {
+        ViewModelProvider(this).get(GifViewModel::class.java)
+    }
     private lateinit var gifIv: ImageView
     private lateinit var descTv: TextView
-    private lateinit var refreshFab: FloatingActionButton
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        //Load random gif
-        viewModel.getRandom()
-    }
+    private lateinit var nextFab: FloatingActionButton
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        view.apply {
-            gifIv = findViewById(R.id.gif_iv)
-            descTv = findViewById(R.id.gif_desc_tv)
-            refreshFab = findViewById(R.id.gif_refresh_fab)
+        arguments?.takeIf { it.containsKey(ARG_OBJECT) }?.apply {
+            Log.d(TAG, "--> arguments.key: ${arguments?.containsKey(ARG_OBJECT)}")
         }
 
+        gifIv = view.findViewById(R.id.gif_iv)
+        descTv = view.findViewById(R.id.gif_desc_tv)
+//        nextFab = view.findViewById(R.id.gif_next_fab)
+
         viewModel.randomGif.observe(viewLifecycleOwner, {
-            Glide.with(requireContext())
-                .load(it.gifURL)
-                .centerCrop()
-                .into(gifIv)
-            descTv.text = it.description
+            try {
+                Glide.with(view.context)
+                    .load(it.gifURL)
+                    .fitCenter()
+                    .skipMemoryCache(true)
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .into(gifIv)
+                descTv.text = it.description
+            } catch (e: HttpException) {
+                e.printStackTrace()
+            }
         })
 
-        refreshFab.setOnClickListener {
+        nextFab.setOnClickListener {
             viewModel.getRandom()
         }
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Glide.get(requireContext()).clearDiskCache()
+    }*/
 }
