@@ -1,5 +1,5 @@
 package com.example.gifapp.model
 
 class GifResponse {
-    val result: List<Gif>? = null
+    val result: MutableList<Gif>? = null
 }

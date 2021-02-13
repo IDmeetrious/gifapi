@@ -8,7 +8,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.gifapp.R
 import com.example.gifapp.model.Gif
 
-class GifPagerAdapter(private val data: List<Gif>) : RecyclerView.Adapter<GifViewHolder>() {
+class GifPagerAdapter(private val data: MutableList<Gif>) : RecyclerView.Adapter<GifViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GifViewHolder {
         val view = LayoutInflater.from(parent.context)

@@ -12,22 +12,15 @@ interface GifApi {
     @GET("random")
     fun getRandom(
         @Query("json") json: Boolean
-    ) : Call<Gif>
+    ): Call<Gif>
 
     @GET("latest/{page}?json=true")
     fun getLatest(
         @Path("page") page: Int
-    ) : Call<GifResponse>
+    ): Call<GifResponse>
 
-    @GET("hot/{page}")
-    fun getHot(
-        @Path("page") page: Int,
-        @Query("json") json: Boolean
-    ) : Call<List<Gif>>
-
-    @GET("top/{page}")
+    @GET("top/{page}?json=true")
     fun getTop(
-        @Path("page") page: Int,
-        @Query("json") json: Boolean
-    ) : Call<List<Gif>>
+        @Path("page") page: Int
+    ): Call<GifResponse>
 }

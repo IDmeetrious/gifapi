@@ -7,5 +7,6 @@
     <string name="gif_image">Gif image</string>
     <string name="hot">Hot</string>
     <string name="best">Best</string>
-    <string name="last">Last</string>
+    <string name="latest">Latest</string>
+    <string name="random">Random</string>
 </resources>
