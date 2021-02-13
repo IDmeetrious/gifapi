@@ -5,54 +5,6 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/gif_toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?attr/colorPrimary"
-        android:minHeight="?attr/actionBarSize"
-        android:theme="?attr/actionBarTheme"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="@string/developers_life"
-            android:textColor="@color/black"
-            android:textSize="26sp"
-            android:textStyle="bold" />
-    </androidx.appcompat.widget.Toolbar>
-
-    <com.google.android.material.tabs.TabLayout
-        android:id="@+id/tab_layout"
-        style="@style/TabLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <com.google.android.material.tabs.TabItem
-            android:id="@+id/tab_random"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/random" />
-
-        <com.google.android.material.tabs.TabItem
-            android:id="@+id/tab_latest"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/latest">
-        </com.google.android.material.tabs.TabItem>
-
-        <com.google.android.material.tabs.TabItem
-            android:id="@+id/tab_best"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/best" />
-
-    </com.google.android.material.tabs.TabLayout>
-
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/tab_viewpager"
         android:layout_width="match_parent"

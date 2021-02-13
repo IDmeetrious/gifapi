@@ -12,7 +12,7 @@ class GifPagerAdapter(private val data: MutableList<Gif>) : RecyclerView.Adapter
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GifViewHolder {
         val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.fragment_gif_random, parent, false)
+            .inflate(R.layout.fragment_gif, parent, false)
         return GifViewHolder(view)
     }
 

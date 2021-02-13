@@ -14,7 +14,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.GifApp"
         tools:targetApi="m">
-        <activity android:name=".ui.GifActivity">
+        <activity android:name=".ui.GifPagerActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
