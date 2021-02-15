@@ -61,13 +61,11 @@ class GifPagerFragment : Fragment(R.layout.fragment_gif_pager) {
             override fun onTabReselected(tab: TabLayout.Tab?) {
                 Log.d(TAG, "onTabReselected: ${tab?.text}")
             }
-
         })
 
         updateUI()
 
         onPrevButton()
-
 
         //TODO fix change page on random
         nextFab.setOnClickListener {
@@ -136,7 +134,6 @@ class GifPagerFragment : Fragment(R.layout.fragment_gif_pager) {
 
 
                 if (position == viewPager.adapter?.itemCount?.minus(1)) {
-                    currentPosition = position + 1
                     pageIndex++
                     getTop(pageIndex)
                 }
@@ -155,7 +152,6 @@ class GifPagerFragment : Fragment(R.layout.fragment_gif_pager) {
                 currentPosition = position
 
                 if (position == viewPager.adapter?.itemCount?.minus(1)) {
-                    currentPosition = position + 1
                     pageIndex++
                     getLatest(pageIndex)
                 }
