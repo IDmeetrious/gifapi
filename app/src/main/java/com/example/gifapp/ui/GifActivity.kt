@@ -14,7 +14,7 @@ class GifActivity : AppCompatActivity(R.layout.activity_gif) {
         val currentFragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
         if (currentFragment == null) {
             supportFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, GifPagerFragment())
+                .replace(R.id.fragment_container, GifCategoriesFragment())
                 .commit()
         }
     }

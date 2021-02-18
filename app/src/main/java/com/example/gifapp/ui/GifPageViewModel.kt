@@ -11,9 +11,9 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-private const val TAG = "GifPagerViewModel"
+private const val TAG = "GifPageViewModel"
 
-class GifPagerViewModel : ViewModel() {
+class GifPageViewModel : ViewModel() {
     private val repository = Repository()
     private val tempRandom = ArrayList<Gif>()
     private val tempLatest = ArrayList<Gif>()
