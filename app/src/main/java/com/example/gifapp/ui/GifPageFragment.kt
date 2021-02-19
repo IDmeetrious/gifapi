@@ -34,16 +34,13 @@ class GifPageFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = layoutInflater.inflate(R.layout.fragment_gif_page, container, false)
-
         adapter = GifPageAdapter(mutableListOf())
         view.apply {
             viewPager = findViewById(R.id.page_viewpager)
             prevBtn = findViewById(R.id.page_prev_fab)
             nextBtn = findViewById(R.id.page_next_fab)
         }
-
         viewPager.isHorizontalScrollBarEnabled = false
-
         return view
     }
 
@@ -53,21 +50,20 @@ class GifPageFragment : Fragment() {
                 val category = this.getSerializable(Constants.ARGS_CATEGORY)
                 when (category) {
                     getString(R.string.random) -> {
-                        Log.d(TAG, "--> onCreateView: args = $category")
-//                        setPageRandom()
+                        Log.i(TAG, "--> onCreateView: args = $category")
+                        initRandom()
                     }
                     getString(R.string.latest) -> {
-                        Log.d(TAG, "--> onCreateView: args = $category")
-//                        getLatest(pageIndex)
+                        Log.i(TAG, "--> onCreateView: args = $category")
+                        initLatest()
                     }
                     getString(R.string.top) -> {
-                        Log.d(TAG, "--> onCreateView: args = $category")
-//                        getTop(pageIndex)
+                        Log.i(TAG, "--> onCreateView: args = $category")
+                        initTop()
                     }
                 }
             }
         }
-        //TODO --> Don't let viewpager to swipe
         updateUI()
     }
 
@@ -76,6 +72,10 @@ class GifPageFragment : Fragment() {
             adapter = GifPageAdapter(it)
             adapter.notifyDataSetChanged()
             viewPager.adapter = adapter
+            viewPager.setCurrentItem(currentPosition, false)
+        })
+        viewModel.prevBtnState.observe(viewLifecycleOwner,{
+            prevBtn.isEnabled = it
         })
     }
 
@@ -97,16 +97,36 @@ class GifPageFragment : Fragment() {
         }
     }
 
-    private fun setPageRandom() {
+
+    //*** Random page is Done! ***
+    private fun initRandom() {
+        adapter = GifPageAdapter(mutableListOf())
         getRandom()
-        Toast.makeText(context, "Random", Toast.LENGTH_SHORT).show()
+
+        nextBtn.setOnClickListener {
+            currentPosition++
+            if (currentPosition > 0) viewModel.setButtonState(true)
+            Toast.makeText(context, "onNext: Random", Toast.LENGTH_SHORT).show()
+            Log.i(TAG, "initRandom: currentPosition --> $currentPosition")
+            getRandom()
+        }
+        prevBtn.setOnClickListener {
+            if (currentPosition > 0) currentPosition--
+            if (currentPosition == 0) viewModel.setButtonState(false)
+            viewPager.setCurrentItem(currentPosition, false)
+            Toast.makeText(context, "onPrev: Random", Toast.LENGTH_SHORT).show()
+            Log.i(TAG, "initRandom: currentPosition --> $currentPosition")
+        }
     }
 
-    private fun setPageTop() {
-        currentPosition = 0
+    //TODO init getting top gifs
+    private fun initTop() {
+        adapter = GifPageAdapter(mutableListOf())
         getTop(pageIndex)
-        Toast.makeText(context, "Top", Toast.LENGTH_SHORT).show()
 
+        nextBtn.setOnClickListener {
+            Toast.makeText(context, "onNext: Top", Toast.LENGTH_SHORT).show()
+        }
         viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 currentPosition = position
@@ -118,10 +138,15 @@ class GifPageFragment : Fragment() {
         })
     }
 
-    private fun setPageLatest() {
+    //TODO init getting latest gifs
+    private fun initLatest() {
+        adapter = GifPageAdapter(mutableListOf())
         currentPosition = 0
         getLatest(pageIndex)
-        Toast.makeText(context, "Latest", Toast.LENGTH_SHORT).show()
+
+        nextBtn.setOnClickListener {
+            Toast.makeText(context, "onNext: Latest", Toast.LENGTH_SHORT).show()
+        }
 
         viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
@@ -134,6 +159,4 @@ class GifPageFragment : Fragment() {
             }
         })
     }
-
-
 }

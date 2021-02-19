@@ -23,8 +23,12 @@ class GifPageViewModel : ViewModel() {
     val data: LiveData<MutableList<Gif>>
         get() = _data
 
+    private val _prevBtnState = MutableLiveData<Boolean>()
+    val prevBtnState: LiveData<Boolean>
+        get() = _prevBtnState
+
     init {
-        getRandom()
+        setButtonState(false)
     }
 
     fun getRandom(json: Boolean = true) {
@@ -43,6 +47,7 @@ class GifPageViewModel : ViewModel() {
             }
         })
     }
+
     fun getLatest(page: Int = 0) {
         val latestGifCall = repository.apiService.getLatest(page)
         latestGifCall.enqueue(object : Callback<GifResponse> {
@@ -59,6 +64,7 @@ class GifPageViewModel : ViewModel() {
             }
         })
     }
+
     fun getTop(page: Int = 0) {
         val latestGifCall = repository.apiService.getTop(page)
         latestGifCall.enqueue(object : Callback<GifResponse> {
@@ -76,4 +82,7 @@ class GifPageViewModel : ViewModel() {
         })
     }
 
+    fun setButtonState(state: Boolean = true){
+        _prevBtnState.value = state
+    }
 }

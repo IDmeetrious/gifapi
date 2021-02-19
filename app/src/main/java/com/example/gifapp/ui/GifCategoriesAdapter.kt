@@ -1,11 +1,13 @@
 package com.example.gifapp.ui
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.example.gifapp.other.Constants.ARGS_CATEGORY
 import com.example.gifapp.other.Constants.TOTAL_PAGES
 
+private const val TAG = "GifCategoriesAdapter"
 class GifCategoriesAdapter(fr: GifCategoriesFragment) : FragmentStateAdapter(fr) {
     override fun getItemCount(): Int = TOTAL_PAGES
 
@@ -20,6 +22,7 @@ class GifCategoriesAdapter(fr: GifCategoriesFragment) : FragmentStateAdapter(fr)
         fragment.arguments = Bundle().apply {
             putSerializable(ARGS_CATEGORY, category)
         }
+        Log.d(TAG, "--> createFragment: $category")
         return fragment
     }
 }
