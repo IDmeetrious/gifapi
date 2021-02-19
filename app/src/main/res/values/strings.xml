@@ -10,4 +10,6 @@
     <string name="latest">Latest</string>
     <string name="random">Random</string>
     <string name="top">Top</string>
+    <string name="try_again">Try Again</string>
+    <string name="connection_failed_try_again">Connection failed.. Try again!</string>
 </resources>

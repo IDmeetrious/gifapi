@@ -69,12 +69,10 @@ class GifCategoriesFragment : Fragment() {
             }
         })
     }
-    //TODO define change current gif within current page
-
 
     override fun onDetach() {
         super.onDetach()
-        viewLifecycleOwner.lifecycleScope.launch {
+        requireActivity().lifecycleScope.launch {
             Glide.get(requireContext()).clearDiskCache()
         }
     }

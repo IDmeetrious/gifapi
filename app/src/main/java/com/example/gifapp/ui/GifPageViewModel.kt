@@ -9,6 +9,7 @@ import com.example.gifapp.model.Gif
 import com.example.gifapp.model.GifResponse
 import retrofit2.Call
 import retrofit2.Callback
+import retrofit2.HttpException
 import retrofit2.Response
 
 private const val TAG = "GifPageViewModel"
@@ -31,21 +32,31 @@ class GifPageViewModel : ViewModel() {
         setButtonState(false)
     }
 
-    fun getRandom(json: Boolean = true) {
-        val randomGifCall = repository.apiService.getRandom(json)
-        randomGifCall.enqueue(object : Callback<Gif> {
-            override fun onResponse(call: Call<Gif>, response: Response<Gif>) {
-                if (response.isSuccessful && response.body()?.gifURL?.isEmpty() != true) {
-                    tempRandom.add(response.body()!!)
-                    _data.value = tempRandom
-                    Log.d(TAG, "onRandomResponse: ${response.body()}")
-                } else Log.d(TAG, "--> onRandomError: ${response.errorBody()}")
+    fun getRandom() {
+        val randomGifCall = repository.apiService.getRandom()
+
+        //TODO --> Check Network Connection
+
+            try {
+                randomGifCall.enqueue(object : Callback<Gif> {
+                    override fun onResponse(call: Call<Gif>, response: Response<Gif>) {
+                        if (response.isSuccessful && response.body()?.gifURL?.isEmpty() != true) {
+                            tempRandom.add(response.body()!!)
+                            _data.value = tempRandom
+                            Log.d(TAG, "onRandomResponse: ${response.body()}")
+//                } else Log.d(TAG, "--> onRandomError: ${response.errorBody()}")
+                        }
+                    }
+
+                    override fun onFailure(call: Call<Gif>, t: Throwable) {
+                        t.printStackTrace()
+                    }
+                })
+            } catch (e: HttpException) {
+                Log.i(TAG, "ERROR getRandom: ${e.message}")
             }
 
-            override fun onFailure(call: Call<Gif>, t: Throwable) {
-                t.printStackTrace()
-            }
-        })
+
     }
 
     fun getLatest(page: Int = 0) {
@@ -82,7 +93,7 @@ class GifPageViewModel : ViewModel() {
         })
     }
 
-    fun setButtonState(state: Boolean = true){
+    fun setButtonState(state: Boolean = true) {
         _prevBtnState.value = state
     }
 }

@@ -13,8 +13,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.GifApp"
+
         tools:targetApi="m">
-        <activity android:name=".ui.GifActivity">
+        <activity android:name=".ui.GifActivity"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

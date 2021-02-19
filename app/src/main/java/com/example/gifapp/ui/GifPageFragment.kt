@@ -40,11 +40,12 @@ class GifPageFragment : Fragment() {
             prevBtn = findViewById(R.id.page_prev_fab)
             nextBtn = findViewById(R.id.page_next_fab)
         }
-        viewPager.isHorizontalScrollBarEnabled = false
+        viewPager.isNestedScrollingEnabled = false
         return view
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+
         if (arguments?.containsKey(Constants.ARGS_CATEGORY) != null) {
             arguments?.apply {
                 val category = this.getSerializable(Constants.ARGS_CATEGORY)
@@ -97,7 +98,6 @@ class GifPageFragment : Fragment() {
         }
     }
 
-
     //*** Random page is Done! ***
     private fun initRandom() {
         adapter = GifPageAdapter(mutableListOf())
@@ -119,44 +119,45 @@ class GifPageFragment : Fragment() {
         }
     }
 
-    //TODO init getting top gifs
     private fun initTop() {
         adapter = GifPageAdapter(mutableListOf())
         getTop(pageIndex)
 
         nextBtn.setOnClickListener {
             Toast.makeText(context, "onNext: Top", Toast.LENGTH_SHORT).show()
+            currentPosition++
+            if (currentPosition > 0) viewModel.setButtonState(true)
+            if (currentPosition == adapter.itemCount-1) {
+                pageIndex++
+                getTop(pageIndex)}
+            viewPager.setCurrentItem(currentPosition,false)
         }
-        viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
-            override fun onPageSelected(position: Int) {
-                currentPosition = position
-                if (position == viewPager.adapter?.itemCount?.minus(1)) {
-                    pageIndex++
-                    getTop(pageIndex)
-                }
-            }
-        })
+        prevBtn.setOnClickListener {
+            Toast.makeText(context, "onPrev: Top", Toast.LENGTH_SHORT).show()
+            if (currentPosition > 0) currentPosition--
+            if (currentPosition == 0) viewModel.setButtonState(false)
+            viewPager.setCurrentItem(currentPosition,false)
+        }
     }
 
-    //TODO init getting latest gifs
     private fun initLatest() {
         adapter = GifPageAdapter(mutableListOf())
-        currentPosition = 0
         getLatest(pageIndex)
 
         nextBtn.setOnClickListener {
             Toast.makeText(context, "onNext: Latest", Toast.LENGTH_SHORT).show()
+            currentPosition++
+            if (currentPosition > 0) viewModel.setButtonState(true)
+            if (currentPosition == adapter.itemCount-1) {
+                pageIndex++
+                getLatest(pageIndex)}
+            viewPager.setCurrentItem(currentPosition,false)
         }
-
-        viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
-            override fun onPageSelected(position: Int) {
-                currentPosition = position
-
-                if (position == viewPager.adapter?.itemCount?.minus(1)) {
-                    pageIndex++
-                    getLatest(pageIndex)
-                }
-            }
-        })
+        prevBtn.setOnClickListener {
+            Toast.makeText(context, "onPrev: Latest", Toast.LENGTH_SHORT).show()
+            if (currentPosition > 0) currentPosition--
+            if (currentPosition == 0) viewModel.setButtonState(false)
+            viewPager.setCurrentItem(currentPosition,false)
+        }
     }
 }
