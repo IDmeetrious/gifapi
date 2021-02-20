@@ -1,5 +1,7 @@
 package com.example.gifapp.ui
 
+import android.content.Context
+import android.net.ConnectivityManager
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -33,6 +35,22 @@ class GifPageFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        val currentFragment = requireActivity().supportFragmentManager.findFragmentById(R.id.fragment_container)
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            val cm: ConnectivityManager =
+                requireContext().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val activeNetwork = cm.activeNetwork
+            if (activeNetwork != null) {
+                Log.i(TAG, "Network connection is activated")
+            } else {
+                Log.i(TAG, "getRandom: Failed to connect!")
+                requireActivity().supportFragmentManager.beginTransaction()
+                    .replace(R.id.fragment_container, GifErrorFragment())
+                    .commit()
+            }
+        }
+
         val view = layoutInflater.inflate(R.layout.fragment_gif_page, container, false)
         adapter = GifPageAdapter(mutableListOf())
         view.apply {
@@ -75,14 +93,30 @@ class GifPageFragment : Fragment() {
             viewPager.adapter = adapter
             viewPager.setCurrentItem(currentPosition, false)
         })
-        viewModel.prevBtnState.observe(viewLifecycleOwner,{
+        viewModel.prevBtnState.observe(viewLifecycleOwner, {
             prevBtn.isEnabled = it
         })
     }
 
     private fun getRandom() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.getRandom()
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            val cm: ConnectivityManager =
+                requireContext().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val activeNetwork = cm.activeNetwork
+            if (activeNetwork != null) {
+                viewLifecycleOwner.lifecycleScope.launch {
+                    viewModel.getRandom()
+                }
+            } else {
+                Log.i(TAG, "getRandom: Failed to connect!")
+                requireActivity().supportFragmentManager.beginTransaction()
+                    .replace(R.id.fragment_container, GifErrorFragment())
+                    .commit()
+            }
+        } else {
+            viewLifecycleOwner.lifecycleScope.launch {
+                viewModel.getRandom()
+            }
         }
     }
 
@@ -102,6 +136,7 @@ class GifPageFragment : Fragment() {
     private fun initRandom() {
         adapter = GifPageAdapter(mutableListOf())
         getRandom()
+
 
         nextBtn.setOnClickListener {
             currentPosition++
@@ -127,16 +162,17 @@ class GifPageFragment : Fragment() {
             Toast.makeText(context, "onNext: Top", Toast.LENGTH_SHORT).show()
             currentPosition++
             if (currentPosition > 0) viewModel.setButtonState(true)
-            if (currentPosition == adapter.itemCount-1) {
+            if (currentPosition == adapter.itemCount - 1) {
                 pageIndex++
-                getTop(pageIndex)}
-            viewPager.setCurrentItem(currentPosition,false)
+                getTop(pageIndex)
+            }
+            viewPager.setCurrentItem(currentPosition, false)
         }
         prevBtn.setOnClickListener {
             Toast.makeText(context, "onPrev: Top", Toast.LENGTH_SHORT).show()
             if (currentPosition > 0) currentPosition--
             if (currentPosition == 0) viewModel.setButtonState(false)
-            viewPager.setCurrentItem(currentPosition,false)
+            viewPager.setCurrentItem(currentPosition, false)
         }
     }
 
@@ -148,16 +184,17 @@ class GifPageFragment : Fragment() {
             Toast.makeText(context, "onNext: Latest", Toast.LENGTH_SHORT).show()
             currentPosition++
             if (currentPosition > 0) viewModel.setButtonState(true)
-            if (currentPosition == adapter.itemCount-1) {
+            if (currentPosition == adapter.itemCount - 1) {
                 pageIndex++
-                getLatest(pageIndex)}
-            viewPager.setCurrentItem(currentPosition,false)
+                getLatest(pageIndex)
+            }
+            viewPager.setCurrentItem(currentPosition, false)
         }
         prevBtn.setOnClickListener {
             Toast.makeText(context, "onPrev: Latest", Toast.LENGTH_SHORT).show()
             if (currentPosition > 0) currentPosition--
             if (currentPosition == 0) viewModel.setButtonState(false)
-            viewPager.setCurrentItem(currentPosition,false)
+            viewPager.setCurrentItem(currentPosition, false)
         }
     }
 }

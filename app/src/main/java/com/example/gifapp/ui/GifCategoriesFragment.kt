@@ -31,13 +31,15 @@ class GifCategoriesFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = layoutInflater.inflate(R.layout.fragment_gif_categories,container,false)
-        view.apply {
+
+
+        val mView = inflater.inflate(R.layout.fragment_gif_categories,container,false)
+        mView.apply {
             viewPager = findViewById(R.id.tab_viewpager)
             tabs = findViewById(R.id.tab_layout)
 
         }
-        return view
+        return mView
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

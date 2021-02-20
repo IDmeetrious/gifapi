@@ -18,4 +18,5 @@ class GifActivity : AppCompatActivity(R.layout.activity_gif) {
                 .commit()
         }
     }
+
 }
