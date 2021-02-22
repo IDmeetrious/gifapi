@@ -31,8 +31,6 @@ class GifCategoriesFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-
-
         val mView = inflater.inflate(R.layout.fragment_gif_categories,container,false)
         mView.apply {
             viewPager = findViewById(R.id.tab_viewpager)

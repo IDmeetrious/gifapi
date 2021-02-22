@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import com.example.gifapp.data.Repository
 import com.example.gifapp.model.Gif
 import com.example.gifapp.model.GifResponse
+import com.example.gifapp.other.GifApiStatus
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.HttpException
@@ -15,6 +16,10 @@ import retrofit2.Response
 private const val TAG = "GifPageViewModel"
 
 class GifPageViewModel : ViewModel() {
+    private val _apiStatus = MutableLiveData<GifApiStatus>()
+    val apiStatus: LiveData<GifApiStatus>
+    get() = _apiStatus
+
     private val repository = Repository()
     private val tempRandom = ArrayList<Gif>()
     private val tempLatest = ArrayList<Gif>()
@@ -35,25 +40,26 @@ class GifPageViewModel : ViewModel() {
     fun getRandom() {
         val randomGifCall = repository.apiService.getRandom()
 
-        //TODO --> Check Network Connection
-
             try {
+                _apiStatus.value = GifApiStatus.LOADING
                 randomGifCall.enqueue(object : Callback<Gif> {
                     override fun onResponse(call: Call<Gif>, response: Response<Gif>) {
                         if (response.isSuccessful && response.body()?.gifURL?.isEmpty() != true) {
                             tempRandom.add(response.body()!!)
                             _data.value = tempRandom
                             Log.d(TAG, "onRandomResponse: ${response.body()}")
-//                } else Log.d(TAG, "--> onRandomError: ${response.errorBody()}")
                         }
+                        _apiStatus.value = GifApiStatus.SUCCESS
                     }
 
                     override fun onFailure(call: Call<Gif>, t: Throwable) {
                         t.printStackTrace()
+                        _apiStatus.value = GifApiStatus.ERROR
                     }
                 })
             } catch (e: HttpException) {
                 Log.i(TAG, "ERROR getRandom: ${e.message}")
+                _apiStatus.value = GifApiStatus.ERROR
             }
 
 

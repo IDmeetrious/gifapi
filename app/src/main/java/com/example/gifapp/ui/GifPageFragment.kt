@@ -1,7 +1,5 @@
 package com.example.gifapp.ui
 
-import android.content.Context
-import android.net.ConnectivityManager
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -14,10 +12,11 @@ import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
 import com.example.gifapp.R
 import com.example.gifapp.other.Constants
+import com.example.gifapp.other.GifApiStatus
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.launch
 
-private const val TAG = "GifPagerFragment"
+private const val TAG = "GifPageFragment"
 
 class GifPageFragment : Fragment() {
     private val viewModel: GifPageViewModel by lazy {
@@ -35,21 +34,6 @@ class GifPageFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val currentFragment = requireActivity().supportFragmentManager.findFragmentById(R.id.fragment_container)
-
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-            val cm: ConnectivityManager =
-                requireContext().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-            val activeNetwork = cm.activeNetwork
-            if (activeNetwork != null) {
-                Log.i(TAG, "Network connection is activated")
-            } else {
-                Log.i(TAG, "getRandom: Failed to connect!")
-                requireActivity().supportFragmentManager.beginTransaction()
-                    .replace(R.id.fragment_container, GifErrorFragment())
-                    .commit()
-            }
-        }
 
         val view = layoutInflater.inflate(R.layout.fragment_gif_page, container, false)
         adapter = GifPageAdapter(mutableListOf())
@@ -87,6 +71,7 @@ class GifPageFragment : Fragment() {
     }
 
     private fun updateUI() {
+
         viewModel.data.observe(viewLifecycleOwner, {
             adapter = GifPageAdapter(it)
             adapter.notifyDataSetChanged()
@@ -96,26 +81,31 @@ class GifPageFragment : Fragment() {
         viewModel.prevBtnState.observe(viewLifecycleOwner, {
             prevBtn.isEnabled = it
         })
+
     }
 
     private fun getRandom() {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-            val cm: ConnectivityManager =
-                requireContext().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-            val activeNetwork = cm.activeNetwork
-            if (activeNetwork != null) {
-                viewLifecycleOwner.lifecycleScope.launch {
-                    viewModel.getRandom()
-                }
-            } else {
-                Log.i(TAG, "getRandom: Failed to connect!")
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.getRandom()
+        }
+        viewModel.apiStatus.observe(viewLifecycleOwner, {
+            checkApiStatus(it)
+        })
+    }
+
+    private fun checkApiStatus(status: GifApiStatus?) {
+        when(status){
+            GifApiStatus.LOADING -> {
+                Log.i(TAG, "ApiStatus: LOADING")
+            }
+            GifApiStatus.ERROR -> {
+                Log.i(TAG, "ApiStatus: ERROR")
                 requireActivity().supportFragmentManager.beginTransaction()
                     .replace(R.id.fragment_container, GifErrorFragment())
                     .commit()
             }
-        } else {
-            viewLifecycleOwner.lifecycleScope.launch {
-                viewModel.getRandom()
+            GifApiStatus.SUCCESS -> {
+                Log.i(TAG, "ApiStatus: SUCCESS")
             }
         }
     }
@@ -136,7 +126,6 @@ class GifPageFragment : Fragment() {
     private fun initRandom() {
         adapter = GifPageAdapter(mutableListOf())
         getRandom()
-
 
         nextBtn.setOnClickListener {
             currentPosition++

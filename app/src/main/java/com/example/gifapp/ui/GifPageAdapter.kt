@@ -60,9 +60,7 @@ class GifPageAdapter(private val data: MutableList<Gif>) : RecyclerView.Adapter<
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .into(holder.image)
         }
-//        if (item.gifURL.isNotBlank() && item.gifURL.isNotEmpty()) {
-//
-//        }
+
     }
 
     override fun getItemCount(): Int = data.size
