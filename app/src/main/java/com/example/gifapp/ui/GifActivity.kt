@@ -12,20 +12,8 @@ class GifActivity : AppCompatActivity(R.layout.activity_gif), SwipeRefreshLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        val currentFragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
-        if (currentFragment == null) {
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, GifCategoriesFragment())
-                .addToBackStack(null)
-                .commit()
-        }
     }
 
-    fun onRefreshActivity(){
-        Log.i(TAG, "--> onRefreshActivity: ")
-        this.onRestart()
-    }
     override fun onRefresh() {
         Log.i(TAG, "--> onSwipeLayoutRefresh: ")
     }

@@ -9,12 +9,16 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.findNavController
 import androidx.viewpager2.widget.ViewPager2
 import com.example.gifapp.R
 import com.example.gifapp.other.Constants
 import com.example.gifapp.other.GifApiStatus
+import com.example.gifapp.ui.adapters.GifPageAdapter
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
+import java.io.IOException
+import kotlin.concurrent.thread
 
 private const val TAG = "GifPageFragment"
 
@@ -35,6 +39,7 @@ class GifPageFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
 
+        Log.i(TAG, "--> onCreateView: ")
         val view = layoutInflater.inflate(R.layout.fragment_gif_page, container, false)
         adapter = GifPageAdapter(mutableListOf())
         view.apply {
@@ -47,7 +52,7 @@ class GifPageFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-
+        Log.i(TAG, "--> onViewCreated: ")
         if (arguments?.containsKey(Constants.ARGS_CATEGORY) != null) {
             arguments?.apply {
                 val category = this.getSerializable(Constants.ARGS_CATEGORY)
@@ -85,6 +90,7 @@ class GifPageFragment : Fragment() {
     }
 
     private fun getRandom() {
+        Log.i(TAG, "--> getRandom: ")
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.getRandom()
         }
@@ -94,15 +100,14 @@ class GifPageFragment : Fragment() {
     }
 
     private fun checkApiStatus(status: GifApiStatus?) {
-        when(status){
+        when (status) {
             GifApiStatus.LOADING -> {
                 Log.i(TAG, "ApiStatus: LOADING")
             }
             GifApiStatus.ERROR -> {
                 Log.i(TAG, "ApiStatus: ERROR")
-                requireActivity().supportFragmentManager.beginTransaction()
-                    .replace(R.id.fragment_container, GifErrorFragment())
-                    .commit()
+                view?.findNavController()!!
+                    .navigate(R.id.action_gifCategoriesFragment_to_gifErrorFragment) // TODO not working on second time
             }
             GifApiStatus.SUCCESS -> {
                 Log.i(TAG, "ApiStatus: SUCCESS")
@@ -185,5 +190,10 @@ class GifPageFragment : Fragment() {
             if (currentPosition == 0) viewModel.setButtonState(false)
             viewPager.setCurrentItem(currentPosition, false)
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Log.i(TAG, "--> onResume: ")
     }
 }

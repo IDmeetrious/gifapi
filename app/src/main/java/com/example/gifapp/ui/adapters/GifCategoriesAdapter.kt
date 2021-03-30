@@ -1,4 +1,4 @@
-package com.example.gifapp.ui
+package com.example.gifapp.ui.adapters
 
 import android.os.Bundle
 import android.util.Log
@@ -6,6 +6,8 @@ import androidx.fragment.app.Fragment
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.example.gifapp.other.Constants.ARGS_CATEGORY
 import com.example.gifapp.other.Constants.TOTAL_PAGES
+import com.example.gifapp.ui.GifCategoriesFragment
+import com.example.gifapp.ui.GifPageFragment
 
 private const val TAG = "GifCategoriesAdapter"
 class GifCategoriesAdapter(fr: GifCategoriesFragment) : FragmentStateAdapter(fr) {

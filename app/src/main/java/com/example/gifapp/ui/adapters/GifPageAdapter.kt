@@ -1,4 +1,4 @@
-package com.example.gifapp.ui
+package com.example.gifapp.ui.adapters
 
 import android.graphics.Color
 import android.graphics.drawable.Drawable
@@ -14,6 +14,7 @@ import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import com.example.gifapp.R
 import com.example.gifapp.model.Gif
+import com.example.gifapp.ui.GifViewHolder
 
 private const val TAG = "GifPageAdapter"
 

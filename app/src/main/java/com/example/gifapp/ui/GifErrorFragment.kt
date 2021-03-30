@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
+import androidx.navigation.findNavController
 import com.example.gifapp.R
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
@@ -32,10 +33,7 @@ class GifErrorFragment : Fragment() {
                 if (activeNetwork != null) {
                     //TODO fix change fragment transaction
                     Log.i(TAG, "--> onCreateView: Network is On! ver1.1")
-                    val intent = Intent(context, GifActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    startActivity(intent)
-                    onDetach()
+                    view.findNavController().navigateUp()
                 } else {
                     Log.i(TAG, "onCreateView: No internet yet")
                 }

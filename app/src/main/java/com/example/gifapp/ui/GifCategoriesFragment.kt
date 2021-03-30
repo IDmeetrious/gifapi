@@ -11,6 +11,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
 import com.bumptech.glide.Glide
 import com.example.gifapp.R
+import com.example.gifapp.ui.adapters.GifCategoriesAdapter
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import kotlinx.coroutines.launch
@@ -19,9 +20,6 @@ private const val TAG = "GifCategoriesFragment"
 
 class GifCategoriesFragment : Fragment() {
 
-    private val sharedViewModel: GifPageViewModel by lazy{
-        ViewModelProvider(this).get(GifPageViewModel::class.java)
-    }
     private lateinit var categoriesAdapter: GifCategoriesAdapter
     private lateinit var viewPager: ViewPager2
     private lateinit var tabs: TabLayout
@@ -35,7 +33,6 @@ class GifCategoriesFragment : Fragment() {
         mView.apply {
             viewPager = findViewById(R.id.tab_viewpager)
             tabs = findViewById(R.id.tab_layout)
-
         }
         return mView
     }
