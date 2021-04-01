@@ -5,11 +5,13 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
 import com.bumptech.glide.Glide
 import com.example.gifapp.R
 import com.example.gifapp.network.NetworkReceiverFragment
+import com.example.gifapp.network.NetworkUtil
 import com.example.gifapp.ui.adapters.GifCategoriesAdapter
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
@@ -72,5 +74,4 @@ class GifCategoriesFragment : NetworkReceiverFragment() {
             Glide.get(requireContext()).clearDiskCache()
         }
     }
-
 }

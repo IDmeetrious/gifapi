@@ -2,6 +2,7 @@ package com.example.gifapp.network
 
 import android.content.Context
 import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.Build
 import android.util.Log
 import android.widget.Toast
@@ -9,6 +10,7 @@ import android.widget.Toast
 private const val TAG = "NetworkUtil"
 
 class NetworkUtil(private var context: Context) {
+
     fun onNetworkAvailable(): Boolean {
         val cm: ConnectivityManager =
             context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -26,4 +28,5 @@ class NetworkUtil(private var context: Context) {
             false
         }
     }
+
 }
