@@ -1,4 +1,5 @@
 <resources>
+<!-- App   -->
     <string name="app_name">GifApp</string>
     <string name="next">Next</string>
     <string name="refresh">Refresh</string>
@@ -11,5 +12,7 @@
     <string name="random">Random</string>
     <string name="top">Top</string>
     <string name="try_again">Try Again</string>
+<!-- Network   -->
     <string name="connection_failed_try_again">Connection failed.. Try again!</string>
+    <string name="no_internet_connection">Internet connection is not available</string>
 </resources>

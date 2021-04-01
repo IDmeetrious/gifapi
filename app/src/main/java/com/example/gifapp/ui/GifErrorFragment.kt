@@ -1,50 +1,39 @@
 package com.example.gifapp.ui
 
-import android.content.Context
-import android.content.Intent
-import android.net.ConnectivityManager
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.commit
 import androidx.navigation.findNavController
 import com.example.gifapp.R
+import com.example.gifapp.network.NetworkUtil
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-
-private const val TAG = "GifErrorFragment"
+import com.google.android.material.snackbar.Snackbar
 
 class GifErrorFragment : Fragment() {
+    private lateinit var tryBtn: FloatingActionButton
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_gif_error, container, false)
-        val tryBtn = view.findViewById(R.id.error_refresh_fab) as FloatingActionButton
-
-        tryBtn.setOnClickListener {
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-                val cm: ConnectivityManager =
-                    requireContext().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-                val activeNetwork = cm.activeNetwork
-                if (activeNetwork != null) {
-                    //TODO fix change fragment transaction
-                    Log.i(TAG, "--> onCreateView: Network is On! ver1.1")
-                    view.findNavController().navigateUp()
-                } else {
-                    Log.i(TAG, "onCreateView: No internet yet")
-                }
-            }
-
-        }
+        tryBtn = view.findViewById(R.id.error_refresh_fab)
         return view
     }
 
-    override fun onDetach() {
-        super.onDetach()
-        Log.i(TAG, "--> onDetach")
+    override fun onStart() {
+        super.onStart()
+
+        tryBtn.setOnClickListener {
+            if (NetworkUtil(requireContext()).onNetworkAvailable())
+                view?.findNavController()!!.navigateUp()
+            else
+                Snackbar.make(requireView(), getString(R.string.no_internet_connection), Snackbar.LENGTH_SHORT)
+                    .show()
+        }
     }
 }

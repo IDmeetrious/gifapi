@@ -9,7 +9,6 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.findNavController
 import androidx.viewpager2.widget.ViewPager2
 import com.example.gifapp.R
 import com.example.gifapp.other.Constants
@@ -17,8 +16,6 @@ import com.example.gifapp.other.GifApiStatus
 import com.example.gifapp.ui.adapters.GifPageAdapter
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.*
-import java.io.IOException
-import kotlin.concurrent.thread
 
 private const val TAG = "GifPageFragment"
 
@@ -106,8 +103,6 @@ class GifPageFragment : Fragment() {
             }
             GifApiStatus.ERROR -> {
                 Log.i(TAG, "ApiStatus: ERROR")
-                view?.findNavController()!!
-                    .navigate(R.id.action_gifCategoriesFragment_to_gifErrorFragment) // TODO not working on second time
             }
             GifApiStatus.SUCCESS -> {
                 Log.i(TAG, "ApiStatus: SUCCESS")
@@ -135,7 +130,6 @@ class GifPageFragment : Fragment() {
         nextBtn.setOnClickListener {
             currentPosition++
             if (currentPosition > 0) viewModel.setButtonState(true)
-            Toast.makeText(context, "onNext: Random", Toast.LENGTH_SHORT).show()
             Log.i(TAG, "initRandom: currentPosition --> $currentPosition")
             getRandom()
         }
@@ -143,7 +137,6 @@ class GifPageFragment : Fragment() {
             if (currentPosition > 0) currentPosition--
             if (currentPosition == 0) viewModel.setButtonState(false)
             viewPager.setCurrentItem(currentPosition, false)
-            Toast.makeText(context, "onPrev: Random", Toast.LENGTH_SHORT).show()
             Log.i(TAG, "initRandom: currentPosition --> $currentPosition")
         }
     }
@@ -153,7 +146,6 @@ class GifPageFragment : Fragment() {
         getTop(pageIndex)
 
         nextBtn.setOnClickListener {
-            Toast.makeText(context, "onNext: Top", Toast.LENGTH_SHORT).show()
             currentPosition++
             if (currentPosition > 0) viewModel.setButtonState(true)
             if (currentPosition == adapter.itemCount - 1) {
@@ -163,7 +155,6 @@ class GifPageFragment : Fragment() {
             viewPager.setCurrentItem(currentPosition, false)
         }
         prevBtn.setOnClickListener {
-            Toast.makeText(context, "onPrev: Top", Toast.LENGTH_SHORT).show()
             if (currentPosition > 0) currentPosition--
             if (currentPosition == 0) viewModel.setButtonState(false)
             viewPager.setCurrentItem(currentPosition, false)
@@ -175,7 +166,6 @@ class GifPageFragment : Fragment() {
         getLatest(pageIndex)
 
         nextBtn.setOnClickListener {
-            Toast.makeText(context, "onNext: Latest", Toast.LENGTH_SHORT).show()
             currentPosition++
             if (currentPosition > 0) viewModel.setButtonState(true)
             if (currentPosition == adapter.itemCount - 1) {
@@ -185,7 +175,6 @@ class GifPageFragment : Fragment() {
             viewPager.setCurrentItem(currentPosition, false)
         }
         prevBtn.setOnClickListener {
-            Toast.makeText(context, "onPrev: Latest", Toast.LENGTH_SHORT).show()
             if (currentPosition > 0) currentPosition--
             if (currentPosition == 0) viewModel.setButtonState(false)
             viewPager.setCurrentItem(currentPosition, false)

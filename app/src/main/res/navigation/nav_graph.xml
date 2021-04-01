@@ -19,15 +19,6 @@
         <action
             android:id="@+id/action_gifErrorFragment_to_gifCategoriesFragment"
             app:destination="@id/gifCategoriesFragment"
-            app:popUpTo="@id/gifCategoriesFragment"
-            app:popUpToInclusive="false" />
-    </fragment>
-    <fragment
-        android:id="@+id/gifPageFragment"
-        android:name="com.example.gifapp.ui.GifPageFragment"
-        android:label="GifPageFragment" >
-        <action
-            android:id="@+id/action_gifPageFragment_to_gifErrorFragment"
-            app:destination="@id/gifErrorFragment" />
+            app:popUpTo="@id/nav_graph" />
     </fragment>
 </navigation>

@@ -47,7 +47,7 @@ class GifPageViewModel : ViewModel() {
                         if (response.isSuccessful && response.body()?.gifURL?.isEmpty() != true) {
                             tempRandom.add(response.body()!!)
                             _data.value = tempRandom
-                            Log.d(TAG, "onRandomResponse: ${response.body()}")
+                            Log.i(TAG, "onRandomResponse: ${response.body()}")
                         }
                         _apiStatus.value = GifApiStatus.SUCCESS
                     }
@@ -58,7 +58,7 @@ class GifPageViewModel : ViewModel() {
                     }
                 })
             } catch (e: HttpException) {
-                Log.i(TAG, "ERROR getRandom: ${e.message}")
+                Log.e(TAG, "ERROR getRandom: ${e.message}")
                 _apiStatus.value = GifApiStatus.ERROR
             }
 
@@ -72,8 +72,8 @@ class GifPageViewModel : ViewModel() {
                 if (response.isSuccessful && !response.body()?.result.isNullOrEmpty()) {
                     tempLatest.addAll(response.body()!!.result!!)
                     _data.value = tempLatest
-                    Log.d(TAG, "onLatestResponse: ${response.body()!!.result}")
-                } else Log.d(TAG, "--> onLatestError: ${response.errorBody()}")
+                    Log.i(TAG, "onLatestResponse: ${response.body()!!.result}")
+                } else Log.e(TAG, "--> onLatestError: ${response.errorBody()}")
             }
 
             override fun onFailure(call: Call<GifResponse>, t: Throwable) {
@@ -89,8 +89,8 @@ class GifPageViewModel : ViewModel() {
                 if (response.isSuccessful && !response.body()?.result.isNullOrEmpty()) {
                     tempTop.addAll(response.body()!!.result!!)
                     _data.value = tempTop
-                    Log.d(TAG, "onTopResponse: ${response.body()!!.result}")
-                } else Log.d(TAG, "--> onTopError: ${response.errorBody()}")
+                    Log.i(TAG, "onTopResponse: ${response.body()!!.result}")
+                } else Log.e(TAG, "--> onTopError: ${response.errorBody()}")
             }
 
             override fun onFailure(call: Call<GifResponse>, t: Throwable) {
