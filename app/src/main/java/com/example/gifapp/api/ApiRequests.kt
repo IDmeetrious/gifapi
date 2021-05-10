@@ -7,7 +7,7 @@ import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
 
-interface GifApi {
+interface ApiRequests {
 
     @GET("random")
     fun getRandom(

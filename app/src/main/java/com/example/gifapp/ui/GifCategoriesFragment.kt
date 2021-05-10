@@ -5,14 +5,12 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
 import com.bumptech.glide.Glide
 import com.example.gifapp.R
-import com.example.gifapp.network.NetworkReceiverFragment
-import com.example.gifapp.network.NetworkUtil
 import com.example.gifapp.ui.adapters.GifCategoriesAdapter
+import com.example.gifapp.utils.network.NetworkReceiverFragment
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import kotlinx.coroutines.launch
@@ -30,7 +28,7 @@ class GifCategoriesFragment : NetworkReceiverFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val mView = inflater.inflate(R.layout.fragment_gif_categories,container,false)
+        val mView = inflater.inflate(R.layout.fragment_gif_categories, container, false)
         mView.apply {
             viewPager = findViewById(R.id.tab_viewpager)
             tabs = findViewById(R.id.tab_layout)
@@ -45,8 +43,7 @@ class GifCategoriesFragment : NetworkReceiverFragment() {
         TabLayoutMediator(tabs, viewPager) { tab, position ->
             val tabItem = when (position) {
                 0 -> getString(R.string.random)
-                1 -> getString(R.string.latest)
-                2 -> getString(R.string.top)
+                1 -> getString(R.string.favorite)
                 else -> "Item"
             }
             tab.text = tabItem

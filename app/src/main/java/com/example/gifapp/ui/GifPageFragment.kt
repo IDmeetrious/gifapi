@@ -1,21 +1,26 @@
 package com.example.gifapp.ui
 
+import android.content.Intent
 import android.os.Bundle
+import android.os.Environment
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
 import com.example.gifapp.R
-import com.example.gifapp.other.Constants
-import com.example.gifapp.other.GifApiStatus
+import com.example.gifapp.data.FileRepository
+import com.example.gifapp.model.Gif
 import com.example.gifapp.ui.adapters.GifPageAdapter
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.io.File
 
 private const val TAG = "GifPageFragment"
 
@@ -25,10 +30,14 @@ class GifPageFragment : Fragment() {
     }
     private lateinit var adapter: GifPageAdapter
     private lateinit var viewPager: ViewPager2
-    private lateinit var prevBtn: FloatingActionButton
-    private lateinit var nextBtn: FloatingActionButton
+    private lateinit var likeBtn: FloatingActionButton
+    private lateinit var shareBtn: FloatingActionButton
     private var currentPosition = 0
+    private var favoriteCounter = 0
     private var pageIndex = 0
+    private var gif = Gif()
+
+    private lateinit var repository: FileRepository
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -38,151 +47,132 @@ class GifPageFragment : Fragment() {
 
         Log.i(TAG, "--> onCreateView: ")
         val view = layoutInflater.inflate(R.layout.fragment_gif_page, container, false)
-        adapter = GifPageAdapter(mutableListOf())
+        adapter = GifPageAdapter(listOf(), requireContext())
+        repository = FileRepository.getInstance(requireContext())
+
+        Log.i(TAG, "--> onCreateView: pos[${adapter.positionLive.value}]")
+
+        adapter.positionLive.observe(viewLifecycleOwner, {
+            Log.i(TAG, "--> onCreateView: position[$it]")
+            it?.let {
+                currentPosition = it
+                getRandom()
+            }
+        })
+        viewModel.gifLive.observe(viewLifecycleOwner, {
+            Log.i(TAG, "--> onCreateView: GifId[$it]")
+            gif = it
+        })
+
         view.apply {
             viewPager = findViewById(R.id.page_viewpager)
-            prevBtn = findViewById(R.id.page_prev_fab)
-            nextBtn = findViewById(R.id.page_next_fab)
+            likeBtn = findViewById(R.id.page_like)
+            shareBtn = findViewById(R.id.page_share)
         }
         viewPager.isNestedScrollingEnabled = false
+
         return view
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         Log.i(TAG, "--> onViewCreated: ")
-        if (arguments?.containsKey(Constants.ARGS_CATEGORY) != null) {
-            arguments?.apply {
-                val category = this.getSerializable(Constants.ARGS_CATEGORY)
-                when (category) {
-                    getString(R.string.random) -> {
-                        Log.i(TAG, "--> onCreateView: args = $category")
-                        initRandom()
-                    }
-                    getString(R.string.latest) -> {
-                        Log.i(TAG, "--> onCreateView: args = $category")
-                        initLatest()
-                    }
-                    getString(R.string.top) -> {
-                        Log.i(TAG, "--> onCreateView: args = $category")
-                        initTop()
-                    }
-                }
-            }
-        }
+        initRandom()
         updateUI()
     }
 
     private fun updateUI() {
 
-        viewModel.data.observe(viewLifecycleOwner, {
-            adapter = GifPageAdapter(it)
-            adapter.notifyDataSetChanged()
+        viewModel.data.observe(viewLifecycleOwner, { list ->
+            adapter.updateList(list)
+
             viewPager.adapter = adapter
             viewPager.setCurrentItem(currentPosition, false)
         })
-        viewModel.prevBtnState.observe(viewLifecycleOwner, {
-            prevBtn.isEnabled = it
-        })
 
+        viewModel.likeBtnState.observe(viewLifecycleOwner, {
+            Log.i(TAG, "--> updateUI: $it")
+            if (it) {
+                likeBtn.setImageDrawable(
+                    ContextCompat.getDrawable(
+                        requireContext(),
+                        R.drawable.ic_favorite_24
+                    )
+                )
+            } else {
+                likeBtn.setImageDrawable(
+                    ContextCompat.getDrawable(
+                        requireContext(),
+                        R.drawable.ic_favorite_empty_24
+                    )
+                )
+            }
+        })
     }
 
     private fun getRandom() {
         Log.i(TAG, "--> getRandom: ")
-        viewLifecycleOwner.lifecycleScope.launch {
+
+        CoroutineScope(Dispatchers.IO).launch {
             viewModel.getRandom()
+            viewModel.setLikeBtnState(false)
         }
-        viewModel.apiStatus.observe(viewLifecycleOwner, {
-            checkApiStatus(it)
-        })
-    }
-
-    private fun checkApiStatus(status: GifApiStatus?) {
-        when (status) {
-            GifApiStatus.LOADING -> {
-                Log.i(TAG, "ApiStatus: LOADING")
-            }
-            GifApiStatus.ERROR -> {
-                Log.i(TAG, "ApiStatus: ERROR")
-            }
-            GifApiStatus.SUCCESS -> {
-                Log.i(TAG, "ApiStatus: SUCCESS")
-            }
-        }
-    }
-
-    private fun getLatest(page: Int) {
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.getLatest(page)
-        }
-    }
-
-    private fun getTop(page: Int) {
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.getTop(page)
-        }
+        favoriteCounter = 0
     }
 
     //*** Random page is Done! ***
     private fun initRandom() {
-        adapter = GifPageAdapter(mutableListOf())
         getRandom()
 
-        nextBtn.setOnClickListener {
-            currentPosition++
-            if (currentPosition > 0) viewModel.setButtonState(true)
-            Log.i(TAG, "initRandom: currentPosition --> $currentPosition")
-            getRandom()
+        shareBtn.setOnClickListener {
+            /** Created by ID
+             * date: 07-May-21, 6:55 AM
+             * TODO: Share Gif with..
+             */
+
+            shareWith()
         }
-        prevBtn.setOnClickListener {
-            if (currentPosition > 0) currentPosition--
-            if (currentPosition == 0) viewModel.setButtonState(false)
-            viewPager.setCurrentItem(currentPosition, false)
-            Log.i(TAG, "initRandom: currentPosition --> $currentPosition")
+
+        likeBtn.setOnClickListener {
+            /** Created by ID
+             * date: 07-May-21, 6:57 AM
+             * TODO: Add Gif to favorites
+             */
+
+            Log.i(TAG, "--> initRandom: Add to favorites")
+            viewModel.updateLikeBtnState()
+
+            if (favoriteCounter == 0) repository.addToFavotite(gif)
+            favoriteCounter++
+
+            Log.i(TAG, "--> initRandom: State[${viewModel.likeBtnState.value}]")
         }
     }
 
-    private fun initTop() {
-        adapter = GifPageAdapter(mutableListOf())
-        getTop(pageIndex)
-
-        nextBtn.setOnClickListener {
-            currentPosition++
-            if (currentPosition > 0) viewModel.setButtonState(true)
-            if (currentPosition == adapter.itemCount - 1) {
-                pageIndex++
-                getTop(pageIndex)
-            }
-            viewPager.setCurrentItem(currentPosition, false)
+    private fun shareWith() {
+        Log.i(TAG, "--> initRandom: Share with")
+        val file =
+            File(requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES), "${gif.id}.gif")
+        val uri = FileProvider.getUriForFile(requireContext(), "gifapp.fileprovider", file)
+        Log.i(TAG, "--> initRandom: Uri[$uri]")
+        val description = viewModel.data.value?.get(0)?.description
+        Log.i(TAG, "--> initRandom: Text[$description]")
+        val intent = Intent().apply {
+            this.action = Intent.ACTION_SEND
+            this.putExtra(Intent.EXTRA_TEXT, description)
+            this.putExtra(Intent.EXTRA_STREAM, uri)
+            this.type = "image/gif"
+            this.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
         }
-        prevBtn.setOnClickListener {
-            if (currentPosition > 0) currentPosition--
-            if (currentPosition == 0) viewModel.setButtonState(false)
-            viewPager.setCurrentItem(currentPosition, false)
-        }
-    }
-
-    private fun initLatest() {
-        adapter = GifPageAdapter(mutableListOf())
-        getLatest(pageIndex)
-
-        nextBtn.setOnClickListener {
-            currentPosition++
-            if (currentPosition > 0) viewModel.setButtonState(true)
-            if (currentPosition == adapter.itemCount - 1) {
-                pageIndex++
-                getLatest(pageIndex)
-            }
-            viewPager.setCurrentItem(currentPosition, false)
-        }
-        prevBtn.setOnClickListener {
-            if (currentPosition > 0) currentPosition--
-            if (currentPosition == 0) viewModel.setButtonState(false)
-            viewPager.setCurrentItem(currentPosition, false)
-        }
+        startActivity(intent)
     }
 
     override fun onResume() {
         super.onResume()
         Log.i(TAG, "--> onResume: ")
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Log.i(TAG, "--> onPause: ")
     }
 }

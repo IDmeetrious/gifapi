@@ -1,5 +1,5 @@
 <resources>
-<!-- App   -->
+    <!-- App   -->
     <string name="app_name">GifApp</string>
     <string name="next">Next</string>
     <string name="refresh">Refresh</string>
@@ -7,12 +7,14 @@
     <string name="developers_life">Developers Life</string>
     <string name="gif_image">Gif image</string>
     <string name="hot">Hot</string>
-    <string name="best">Best</string>
-    <string name="latest">Latest</string>
+    <string name="favorite">Favorite</string>
     <string name="random">Random</string>
     <string name="top">Top</string>
     <string name="try_again">Try Again</string>
-<!-- Network   -->
+    <!-- Network   -->
     <string name="connection_failed_try_again">Connection failed.. Try again!</string>
     <string name="no_internet_connection">Internet connection is not available</string>
+    <!-- Favorite   -->
+    <string name="favorite_item_gif_description">Gif description</string>
+    <string name="favorite_item_gif_content">Gif content</string>
 </resources>
