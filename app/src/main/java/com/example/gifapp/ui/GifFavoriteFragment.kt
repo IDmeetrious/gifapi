@@ -7,21 +7,23 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.gifapp.R
 import com.example.gifapp.data.FileRepository
+import com.example.gifapp.model.Gif
 import com.example.gifapp.ui.adapters.GifFavoriteAdapter
-import java.io.File
+import com.example.gifapp.utils.Constants.GIF_DESC
+import com.example.gifapp.utils.Constants.GIF_ID
+import com.example.gifapp.utils.Constants.GIF_URI
 
 private const val TAG = "GifFavoriteFragment"
 
-class GifFavoriteFragment: Fragment() {
+class GifFavoriteFragment : Fragment() {
 
     private lateinit var rv: RecyclerView
     private lateinit var adapter: GifFavoriteAdapter
     private lateinit var repository: FileRepository
+    private var gif = Gif()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -31,12 +33,26 @@ class GifFavoriteFragment: Fragment() {
         val rootView = inflater.inflate(R.layout.fragment_favorite, container, false)
 
         adapter = GifFavoriteAdapter(listOf())
+        adapter.gif.observe(viewLifecycleOwner, { mGif ->
+            gif = mGif
+            val args = Bundle().apply {
+                Log.i(TAG, "--> onCreateView: id[${gif.id}]")
+                this.putString(GIF_ID, gif.id)
+                Log.i(TAG, "--> onCreateView: description[${gif.description}]")
+                this.putString(GIF_DESC, gif.description)
+                Log.i(TAG, "--> onCreateView: uri[${gif.gifURL}]")
+                this.putString(GIF_URI, gif.gifURL)
+            }
+
+            Log.i(TAG, "--> onCreateView: moveToFullScreen")
+//            requireActivity().supportFragmentManager.beginTransaction()
+//                .replace(R.id.nav_host_fragment, GifFullScreenFragment::class.java, arguments, TAG)
+//                .commit()
+            val fragment = GifFullScreenFragment()
+            fragment.arguments = args
+            fragment.show(childFragmentManager, "GifFullScreenFragment")
+        })
         repository = FileRepository.getInstance(requireContext())
-
-        rootView.let {
-            rv = it.findViewById(R.id.favorite_rv)
-        }
-
 
         return rootView
     }
@@ -44,12 +60,12 @@ class GifFavoriteFragment: Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         Log.i(TAG, "--> onViewCreated: ")
 
-        initViews()
+        initViews(view)
     }
 
-    private fun initViews() {
-//        updateFavoriteList()
-        rv.layoutManager = GridLayoutManager(requireContext(),3)
+    private fun initViews(view: View) {
+        rv = view.findViewById(R.id.favorite_rv)
+        rv.layoutManager = GridLayoutManager(requireContext(), 3)
         rv.adapter = adapter
     }
 

@@ -5,7 +5,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
 import com.bumptech.glide.Glide
 import com.example.gifapp.R
@@ -13,6 +12,8 @@ import com.example.gifapp.ui.adapters.GifCategoriesAdapter
 import com.example.gifapp.utils.network.NetworkReceiverFragment
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 private const val TAG = "GifCategoriesFragment"
@@ -67,8 +68,10 @@ class GifCategoriesFragment : NetworkReceiverFragment() {
 
     override fun onDetach() {
         super.onDetach()
-        requireActivity().lifecycleScope.launch {
-            Glide.get(requireContext()).clearDiskCache()
+        CoroutineScope(Dispatchers.IO).launch {
+            context?.let {
+                Glide.get(it).clearDiskCache()
+            }
         }
     }
 }

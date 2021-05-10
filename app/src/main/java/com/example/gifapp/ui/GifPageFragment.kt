@@ -34,7 +34,6 @@ class GifPageFragment : Fragment() {
     private lateinit var shareBtn: FloatingActionButton
     private var currentPosition = 0
     private var favoriteCounter = 0
-    private var pageIndex = 0
     private var gif = Gif()
 
     private lateinit var repository: FileRepository
@@ -67,7 +66,7 @@ class GifPageFragment : Fragment() {
         view.apply {
             viewPager = findViewById(R.id.page_viewpager)
             likeBtn = findViewById(R.id.page_like)
-            shareBtn = findViewById(R.id.page_share)
+            shareBtn = findViewById(R.id.fullscreen_fab)
         }
         viewPager.isNestedScrollingEnabled = false
 
@@ -124,20 +123,10 @@ class GifPageFragment : Fragment() {
         getRandom()
 
         shareBtn.setOnClickListener {
-            /** Created by ID
-             * date: 07-May-21, 6:55 AM
-             * TODO: Share Gif with..
-             */
-
             shareWith()
         }
 
         likeBtn.setOnClickListener {
-            /** Created by ID
-             * date: 07-May-21, 6:57 AM
-             * TODO: Add Gif to favorites
-             */
-
             Log.i(TAG, "--> initRandom: Add to favorites")
             viewModel.updateLikeBtnState()
 
@@ -154,7 +143,7 @@ class GifPageFragment : Fragment() {
             File(requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES), "${gif.id}.gif")
         val uri = FileProvider.getUriForFile(requireContext(), "gifapp.fileprovider", file)
         Log.i(TAG, "--> initRandom: Uri[$uri]")
-        val description = viewModel.data.value?.get(0)?.description
+        val description = gif.description
         Log.i(TAG, "--> initRandom: Text[$description]")
         val intent = Intent().apply {
             this.action = Intent.ACTION_SEND
@@ -174,5 +163,21 @@ class GifPageFragment : Fragment() {
     override fun onPause() {
         super.onPause()
         Log.i(TAG, "--> onPause: ")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Log.i(TAG, "--> onStop: ")
+    }
+    
+    override fun onDestroyView() {
+        Log.i(TAG, "--> onDestroyView: ")
+        super.onDestroyView()
+    }
+    
+    override fun onDetach() {
+        Log.i(TAG, "--> onDetach: ")
+        repository.clearStorage()
+        super.onDetach()
     }
 }

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
     app:startDestination="@id/gifCategoriesFragment">
     <fragment
@@ -11,6 +10,9 @@
         <action
             android:id="@+id/action_gifCategoriesFragment_to_gifErrorFragment"
             app:destination="@id/gifErrorFragment" />
+        <action
+            android:id="@+id/action_gifCategoriesFragment_to_gifFavoriteFragment"
+            app:destination="@id/gifFavoriteFragment" />
     </fragment>
     <fragment
         android:id="@+id/gifErrorFragment"
@@ -20,5 +22,22 @@
             android:id="@+id/action_gifErrorFragment_to_gifCategoriesFragment"
             app:destination="@id/gifCategoriesFragment"
             app:popUpTo="@id/nav_graph" />
+    </fragment>
+    <fragment
+        android:id="@+id/gifFavoriteFragment"
+        android:name="com.example.gifapp.ui.GifFavoriteFragment"
+        android:label="GifFavoriteFragment">
+
+        <action
+            android:id="@+id/action_gifFavoriteFragment_to_gifFullScreenFragment"
+            app:destination="@id/gifFullScreenFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/gifFullScreenFragment"
+        android:name="com.example.gifapp.ui.GifFullScreenFragment"
+        android:label="GifFullScreenFragment">
+        <action
+            android:id="@+id/action_gifFullScreenFragment_to_gifFavoriteFragment"
+            app:destination="@id/gifFavoriteFragment" />
     </fragment>
 </navigation>

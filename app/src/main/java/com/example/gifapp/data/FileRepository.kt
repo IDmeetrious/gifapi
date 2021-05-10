@@ -11,6 +11,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
+import java.io.IOException
 import java.net.URL
 import java.util.concurrent.ArrayBlockingQueue
 
@@ -38,8 +39,6 @@ class FileRepository(private val context: Context) {
 
         withContext(Dispatchers.IO) {
             val input = URL(url).openStream()
-            Log.i(TAG, "--> saveLocally: ${bitmap?.byteCount?.div(1024)}KB")
-
             input.use { inp ->
                 val storage: File? = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
                 val output = FileOutputStream("$storage/$id.gif")
@@ -50,7 +49,7 @@ class FileRepository(private val context: Context) {
         }
     }
 
-    fun loadFromStorage(): List<Gif>{
+    fun loadFromStorage(): List<Gif> {
         val list: MutableList<Uri> = mutableListOf()
         val dir: File? = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
         Log.i(TAG, "--> loadFromStorage: ${dir?.listFiles()?.size}")
@@ -77,5 +76,17 @@ class FileRepository(private val context: Context) {
         Log.i(TAG, "--> addToFavotite: Before[${gif.id}]")
         favoriteList.add(gif)
         Log.i(TAG, "--> addToFavotite: After[${favoriteList.size}]")
+    }
+
+    fun clearStorage() {
+        val storage = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+        storage?.listFiles()?.forEach { file ->
+            try {
+                Log.i(TAG, "--> clearStorage: Delete.file[${file.name}")
+                file.deleteRecursively()
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
+        }
     }
 }
