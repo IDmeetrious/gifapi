@@ -3,6 +3,7 @@ package com.example.gifapp.ui.adapters
 import android.net.Uri
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -12,11 +13,12 @@ import com.example.gifapp.R
 import com.example.gifapp.model.Gif
 
 private const val TAG = "GifFavoriteAdapter"
+
 class GifFavoriteAdapter(private var data: List<Gif>) : RecyclerView.Adapter<GifItemViewHolder>() {
 
     private var _gif = MutableLiveData<Gif>()
     val gif: LiveData<Gif>
-    get() = _gif
+        get() = _gif
 
     fun updateData(list: List<Gif>) {
         this.data = list
@@ -38,12 +40,19 @@ class GifFavoriteAdapter(private var data: List<Gif>) : RecyclerView.Adapter<Gif
             .into(holder.imageView)
 
         holder.description.text = item.description
-//        holder.imageView.setImageURI(Uri.parse(item.gifURL))
 
         holder.imageView.adjustViewBounds = true
         holder.imageView.setOnClickListener {
             Log.i(TAG, "--> onBindViewHolder: ${item.id}")
             _gif.postValue(item)
+
+        }
+        holder.imageView.setOnLongClickListener {
+            Log.i(TAG, "--> onBindViewHolder: onLongClick")
+            holder.selectBtn.visibility = View.VISIBLE
+            holder.itemView.scaleX = 0.9f
+            holder.itemView.scaleY = 0.9f
+            true
         }
 
     }
