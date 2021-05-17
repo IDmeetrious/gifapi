@@ -89,4 +89,8 @@ class FileRepository(private val context: Context) {
             }
         }
     }
+
+    fun deleteById(id: String) {
+        TODO("Not yet implemented")
+    }
 }
