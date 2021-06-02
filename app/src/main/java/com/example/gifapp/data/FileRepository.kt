@@ -91,6 +91,13 @@ class FileRepository(private val context: Context) {
     }
 
     fun deleteById(id: String) {
-        TODO("Not yet implemented")
+        val dir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+        Log.i(TAG, "--> deleteFromStorage: ${dir?.listFiles()?.size}")
+
+        dir?.listFiles()?.filter { gifId ->
+            gifId.name.contains(id)
+        }
+            ?.forEach { it.deleteRecursively() }
+
     }
 }
