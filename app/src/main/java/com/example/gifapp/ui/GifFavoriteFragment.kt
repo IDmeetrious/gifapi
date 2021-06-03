@@ -6,6 +6,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.CheckBox
+import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.selection.SelectionPredicates
@@ -35,8 +37,8 @@ class GifFavoriteFragment : Fragment() {
     private lateinit var rv: RecyclerView
     private lateinit var adapter: GifFavoriteAdapter
     private lateinit var repository: FileRepository
-    private var gif = Gif()
-    private var args = Bundle()
+    private var gif: Gif? = null
+    private var selectedCount: Int = 0
 
     // Multi selection
     private var tracker: SelectionTracker<Long>? = null
@@ -44,6 +46,8 @@ class GifFavoriteFragment : Fragment() {
     private lateinit var bottomLayout: ConstraintLayout
     private lateinit var deleteBtn: Button
     private lateinit var cancelBtn: Button
+    private lateinit var selectedTv: TextView
+    private lateinit var selectAllCb: CheckBox
     private var sheetBehavior: BottomSheetBehavior<*>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -67,37 +71,27 @@ class GifFavoriteFragment : Fragment() {
         adapter = GifFavoriteAdapter(listOf())
         adapter.gif.observe(viewLifecycleOwner, { mGif ->
             gif = mGif
-            args.apply {
-                Log.i(TAG, "--> onCreateView: id[${gif.id}]")
-                this.putString(GIF_ID, gif.id)
-                Log.i(TAG, "--> onCreateView: description[${gif.description}]")
-                this.putString(GIF_DESC, gif.description)
-                Log.i(TAG, "--> onCreateView: uri[${gif.gifURL}]")
-                this.putString(GIF_URI, gif.gifURL)
-            }
-            if (gif.gifURL.isNotEmpty() && adapter.isEditable.value == false) {
-                // If dialog was created dismiss
-                Log.i(TAG, "--> onCreateView: moveToFullScreen")
+            gif?.let {
+                val args = Bundle().apply {
+                    Log.i(TAG, "--> onCreateView: id[${it.id}]")
+                    this.putString(GIF_ID, it.id)
+                    Log.i(TAG, "--> onCreateView: description[${it.description}]")
+                    this.putString(GIF_DESC, it.description)
+                    Log.i(TAG, "--> onCreateView: uri[${it.gifURL}]")
+                    this.putString(GIF_URI, it.gifURL)
+                }
+                if (it.gifURL.isNotEmpty() && adapter.isEditable.value == false) {
+                    // If dialog was created dismiss
+                    Log.i(TAG, "--> onCreateView: moveToFullScreen")
 
-                val fragment = GifFullScreenFragment()
-                fragment.arguments = args
-                fragment.show(childFragmentManager, "GifFullScreenFragment")
-            }
-
-        })
-
-        CoroutineScope(Dispatchers.Main).launch {
-            adapter.isSelected.collect {
-                it?.let {
-                    if (it)
-                        sheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+                    val fragment = GifFullScreenFragment()
+                    fragment.arguments = args
+                    fragment.show(childFragmentManager, "GifFullScreenFragment")
                 }
             }
-            adapter.selectedData.collect {
-                adapter.updateData(it)
-            }
-        }
-        repository = FileRepository.getInstance(requireContext())
+        })
+
+
 
         return rootView
     }
@@ -105,6 +99,45 @@ class GifFavoriteFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         Log.i(TAG, "--> onViewCreated: ")
         initViews(view)
+
+        CoroutineScope(Dispatchers.Main).launch {
+            adapter.isSelected.collect {
+                it?.let {
+                    if (it) {
+                        sheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+                    }
+                }
+            }
+            adapter.selectedData.collect {
+                adapter.updateData(it)
+            }
+
+        }
+
+        selectAllCb.setOnCheckedChangeListener { buttonView, isChecked ->
+            if (isChecked) {
+                Log.i(TAG, "--> onViewCreated: ${adapter.itemCount}")
+                for (i in 0..adapter.itemCount){
+                    tracker?.select(i.toLong())
+                }
+            } else {
+                for (i in 0..adapter.itemCount){
+                    tracker?.deselect(i.toLong())
+                }
+
+            }
+        }
+
+        repository = FileRepository.getInstance(requireContext())
+
+        CoroutineScope(Dispatchers.Main).launch {
+            adapter.selectedCount.collect {
+                Log.i(TAG, "--> onViewCreated: selected.count=$it")
+                selectedCount = it
+                selectedTv.text = "Selected: $it"
+                if (it == 0) selectAllCb.isChecked = false
+            }
+        }
     }
 
     private fun initViews(view: View) {
@@ -129,6 +162,10 @@ class GifFavoriteFragment : Fragment() {
         bottomLayout = view.findViewById(R.id.favorite_top_menu)
         deleteBtn = view.findViewById(R.id.favorite_bottom_delete_btn)
         cancelBtn = view.findViewById(R.id.favorite_bottom_cancel_btn)
+        selectAllCb = view.findViewById(R.id.favorite_bottom_check)
+        selectedTv = view.findViewById(R.id.favorite_bottom_select_tv)
+        selectedTv.text = "Selected: $selectedCount"
+
 
         deleteBy()
 
@@ -144,10 +181,9 @@ class GifFavoriteFragment : Fragment() {
                         )
                         adapter.clearSelection()
                     }
-                    BottomSheetBehavior.STATE_EXPANDED -> Log.i(
-                        TAG,
-                        "--> onStateChanged: State_Expanded"
-                    )
+                    BottomSheetBehavior.STATE_EXPANDED -> {
+                        Log.i(TAG, "--> onStateChanged: State_Expanded")
+                    }
                     BottomSheetBehavior.STATE_COLLAPSED -> Log.i(
                         TAG,
                         "--> onStateChanged: State_Collapsed"
@@ -180,10 +216,6 @@ class GifFavoriteFragment : Fragment() {
             adapter.isSelected.collect {
                 it?.let {
                     if (it) {
-                        /** Created by ID
-                         * date: 17-May-21, 4:08 PM
-                         * TODO: delete items by id
-                         */
                         cancelBtn.setOnClickListener {
                             Log.i(TAG, "--> deleteBy: Clicked Cancel")
                             sheetBehavior?.state = BottomSheetBehavior.STATE_HIDDEN
@@ -218,10 +250,5 @@ class GifFavoriteFragment : Fragment() {
         Log.i(TAG, "--> onResume: ")
 
         updateFavoriteList()
-    }
-
-    override fun onStop() {
-        super.onStop()
-        arguments = null
     }
 }

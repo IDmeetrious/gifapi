@@ -27,6 +27,10 @@ class GifFavoriteAdapter(private var data: List<Gif>) :
 
     private var tracker: SelectionTracker<Long>? = null
     private var _selectedList: MutableList<String> = mutableListOf()
+
+    private var _selectedCount = MutableStateFlow(_selectedList.size)
+    val selectedCount: StateFlow<Int> = _selectedCount
+
     private var _selectedData = MutableStateFlow(data)
     val selectedData: StateFlow<List<Gif>> = _selectedData
 
@@ -92,7 +96,6 @@ class GifFavoriteAdapter(private var data: List<Gif>) :
                             }
                         }
                     }
-
                 }
             )
 
@@ -101,17 +104,27 @@ class GifFavoriteAdapter(private var data: List<Gif>) :
                 holder.selectBtn.visibility = View.VISIBLE
                 holder.itemView.scaleY = 0.9f
                 holder.itemView.scaleX = 0.9f
-                Log.i(TAG, "--> onBindViewHolder: selected.add[${item.id}]")
-                _selectedList.add(item.id)
-
+                CoroutineScope(Dispatchers.IO).launch {
+                    Log.i(TAG, "--> onBindViewHolder: selected.add[${item.id}]")
+                    _selectedList.add(item.id)
+                    Log.i(TAG, "--> onBindViewHolder: selected.list=[${_selectedList.size}]")
+                    _selectedCount.emit(_selectedList.size)
+                    Log.i(TAG, "--> onBindViewHolder: selected.count[${selectedCount.value}]")
+                }
             } else {
                 Log.i(TAG, "--> onBindViewHolder: tracker.unselected")
                 holder.selectBtn.visibility = View.INVISIBLE
                 holder.itemView.scaleY = 1.0f
                 holder.itemView.scaleX = 1.0f
+                CoroutineScope(Dispatchers.IO).launch {
+                    Log.i(TAG, "--> onBindViewHolder: selected.drop[${item.id}]")
+                    _selectedList.remove(item.id)
+                    Log.i(TAG, "--> onBindViewHolder: selected.list=[${_selectedList.size}]")
+                    _selectedCount.emit(_selectedList.size)
+                    Log.i(TAG, "--> onBindViewHolder: selected.count[${selectedCount.value}]")
+                }
             }
         }
-
 
         holder.itemView.setOnClickListener {
             _gif.postValue(item)
@@ -124,23 +137,24 @@ class GifFavoriteAdapter(private var data: List<Gif>) :
         CoroutineScope(Dispatchers.IO).launch {
             _isSelected.emit(false)
             _isEditable.emit(false)
+            _selectedList.clear()
+            _selectedCount.value = 0
         }
         tracker?.clearSelection()
     }
 
-    fun deleteSelected(){
+    fun deleteSelected() {
         _selectedList.let { list ->
             this.data = data.filterNot {
                 list.contains(it.id)
             }
+            Log.i(TAG, "--> deleteSelected: filtered.data[${list.size}]")
+            list.forEach {
+                Log.i(TAG, "--> deleteSelected: id[$it]")
+                FileRepository.getInstance(App.getContext()).deleteById(it)
+            }
+
             CoroutineScope(Dispatchers.IO).launch {
-                /** Created by ID
-                 * date: 02-Jun-21, 10:09 PM
-                 * TODO: Delete from files
-                 */
-                data.forEach {
-                    FileRepository.getInstance(App.getContext()).deleteById(it.id)
-                }
                 _selectedData.emit(data)
             }
             list.clear()

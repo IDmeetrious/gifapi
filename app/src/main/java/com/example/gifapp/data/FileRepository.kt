@@ -18,7 +18,7 @@ import java.util.concurrent.ArrayBlockingQueue
 private const val TAG = "FileRepository"
 
 class FileRepository(private val context: Context) {
-    private val favoriteList = ArrayBlockingQueue<Gif>(1024)
+    private var favoriteList = ArrayBlockingQueue<Gif>(1024)
     private var imageDir: File? = null
     private var bitmap: Bitmap? = null
 
@@ -62,7 +62,11 @@ class FileRepository(private val context: Context) {
         val temp: MutableList<Gif> = mutableListOf()
         favoriteList.forEach { gif ->
             Log.i(TAG, "--> loadFromStorage: id[${gif.id}]")
-            val foundUri = list.first { uri -> uri.path?.contains(gif.id) ?: false }
+
+            val foundUri: Uri? = list.firstOrNull {
+                it?.path!!.contains(gif.id)
+            }
+
             Log.i(TAG, "--> loadFromStorage: $foundUri")
             gif.gifURL = "$foundUri"
             temp.add(gif)
@@ -71,7 +75,7 @@ class FileRepository(private val context: Context) {
         return temp
     }
 
-    fun addToFavotite(gif: Gif) {
+    fun addToFavorite(gif: Gif) {
         Log.i(TAG, "--> addToFavotite: Before.size[${favoriteList.size}]")
         Log.i(TAG, "--> addToFavotite: Before[${gif.id}]")
         favoriteList.add(gif)
@@ -88,16 +92,29 @@ class FileRepository(private val context: Context) {
                 e.printStackTrace()
             }
         }
+        /** Created by ID
+         * date: 03-Jun-21, 11:42 AM
+         * TODO: delete only not favorite files
+         */
+        favoriteList.apply {
+            this.clear()
+        }
     }
 
     fun deleteById(id: String) {
         val dir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-        Log.i(TAG, "--> deleteFromStorage: ${dir?.listFiles()?.size}")
+        Log.i(TAG, "--> deleteFromStorage: before=${dir?.listFiles()?.size}")
 
         dir?.listFiles()?.filter { gifId ->
             gifId.name.contains(id)
         }
             ?.forEach { it.deleteRecursively() }
+        Log.i(TAG, "--> deleteById: BQ.size.before=${favoriteList.size}")
+        favoriteList.apply {
+            this.remove(this.firstOrNull { gif -> gif.id == id })
+        }
+        Log.i(TAG, "--> deleteById: BQ.size.after=${favoriteList.size}")
+        Log.i(TAG, "--> deleteFromStorage: after=${dir?.listFiles()?.size}")
 
     }
 }

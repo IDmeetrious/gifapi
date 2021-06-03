@@ -130,7 +130,7 @@ class GifPageFragment : Fragment() {
             Log.i(TAG, "--> initRandom: Add to favorites")
             viewModel.updateLikeBtnState()
 
-            if (favoriteCounter == 0) repository.addToFavotite(gif)
+            if (favoriteCounter == 0) repository.addToFavorite(gif)
             favoriteCounter++
 
             Log.i(TAG, "--> initRandom: State[${viewModel.likeBtnState.value}]")
@@ -171,13 +171,21 @@ class GifPageFragment : Fragment() {
     }
     
     override fun onDestroyView() {
-        Log.i(TAG, "--> onDestroyView: ")
         super.onDestroyView()
+        Log.i(TAG, "--> onDestroyView: ")
+    }
+
+    override fun onDestroy() {
+        Log.i(TAG, "--> onDestroy: ")
+        CoroutineScope(Dispatchers.IO).launch{
+            repository.clearStorage()
+        }
+        super.onDestroy()
     }
     
     override fun onDetach() {
-        Log.i(TAG, "--> onDetach: ")
-        repository.clearStorage()
         super.onDetach()
+        Log.i(TAG, "--> onDetach: ")
     }
+
 }

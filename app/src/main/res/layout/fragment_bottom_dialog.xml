@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/favorite_top_menu"
     app:behavior_hideable="true"
     app:behavior_peekHeight="64dp"
+    android:background="@drawable/bottom_dialog_rounded"
     app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
@@ -34,13 +36,16 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <CheckBox
+    <com.google.android.material.checkbox.MaterialCheckBox
         android:id="@+id/favorite_bottom_check"
+        style="@style/CheckBox"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:text="Select All"
+        android:textSize="18sp"
+        android:paddingHorizontal="8dp"
         android:textColor="@color/grey_blue"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -51,6 +56,7 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
         android:text="Selected: 0"
+        android:textSize="18sp"
         android:textColor="@color/grey_blue"
         app:layout_constraintBottom_toBottomOf="@+id/favorite_bottom_check"
         app:layout_constraintEnd_toEndOf="parent"
