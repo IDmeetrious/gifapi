@@ -42,4 +42,10 @@
         <item name="colorSecondary">@color/blue_400</item>
     </style>
 
+    <style name="DialogTheme" parent="Theme.GifApp">
+        <item name="windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowIsFloating">false</item>
+    </style>
+
 </resources>

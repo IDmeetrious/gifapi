@@ -49,22 +49,13 @@ class GifFullScreenFragment : DialogFragment() {
         return rootView
     }
 
-    override fun onStart() {
-        super.onStart()
-
-        dialog?.let {
-            val width = ViewGroup.LayoutParams.MATCH_PARENT
-            val height = ViewGroup.LayoutParams.MATCH_PARENT
-            it.window?.setLayout(width, height)
-        }
+    override fun getTheme(): Int {
+        return R.style.DialogTheme
     }
 
     private fun initViews() {
         image.setOnClickListener {
             Log.i(TAG, "--> initViews: navigateUp")
-//            parentFragmentManager.beginTransaction()
-//                .remove(this)
-//                .commitNow()
             dismiss()
         }
 
@@ -78,7 +69,10 @@ class GifFullScreenFragment : DialogFragment() {
         Log.i(TAG, "--> initRandom: Uri[${gif.gifURL}]")
         Log.i(TAG, "--> initRandom: Text[${gif.description}]")
         val file =
-            File(requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES), "${gif.id}.gif")
+            File(
+                requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES),
+                "${gif.id}.gif"
+            )
         val uri = FileProvider.getUriForFile(requireContext(), "gifapp.fileprovider", file)
         val intent = Intent().apply {
             this.action = Intent.ACTION_SEND
