@@ -25,7 +25,6 @@ class GifFavoriteViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) 
     fun getItemDetails(): ItemDetailsLookup.ItemDetails<Long> {
         return object : ItemDetailsLookup.ItemDetails<Long>() {
             override fun getPosition(): Int = absoluteAdapterPosition
-
             override fun getSelectionKey(): Long? = itemId
 
         }

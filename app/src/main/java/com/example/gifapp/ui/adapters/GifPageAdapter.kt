@@ -17,13 +17,11 @@ import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import com.example.gifapp.R
-import com.example.gifapp.data.FileRepository
 import com.example.gifapp.model.Gif
 
 private const val TAG = "GifPageAdapter"
 
 class GifPageAdapter(private var data: List<Gif>, private val context: Context) : RecyclerView.Adapter<GifViewHolder>() {
-    private val repository = FileRepository.getInstance(context)
 
     private var _positionLive = MutableLiveData<Int>()
     val positionLive: LiveData<Int>

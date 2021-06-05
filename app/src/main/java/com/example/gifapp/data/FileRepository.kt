@@ -1,7 +1,6 @@
 package com.example.gifapp.data
 
 import android.content.Context
-import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Environment
 import android.util.Log
@@ -9,7 +8,8 @@ import androidx.core.content.FileProvider
 import com.example.gifapp.model.Gif
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -22,13 +22,9 @@ private const val TAG = "FileRepository"
 
 class FileRepository(private val context: Context) {
     private var favoriteList = ArrayBlockingQueue<Gif>(1024)
-    private var imageDir: File? = null
-    private var bitmap: Bitmap? = null
 
     private var _favoriteFlow = MutableStateFlow(favoriteList.size)
     val favoriteFlow: StateFlow<Int> = _favoriteFlow
-
-
 
     companion object {
         private var instance: FileRepository? = null
@@ -103,10 +99,7 @@ class FileRepository(private val context: Context) {
                 e.printStackTrace()
             }
         }
-        /** Created by ID
-         * date: 03-Jun-21, 11:42 AM
-         * TODO: delete only not favorite files
-         */
+
         favoriteList.apply {
             this.clear()
         }
@@ -118,14 +111,7 @@ class FileRepository(private val context: Context) {
     fun deleteById(id: String) {
         val dir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
         Log.i(TAG, "--> deleteFromStorage: before=${dir?.listFiles()?.size}")
-//
-//        dir?.listFiles()?.filter { gifId ->
-//            gifId.name.contains(id)
-//        }
-//            ?.forEach { it.deleteRecursively() }
         Log.i(TAG, "--> deleteById: BQ.size.before=${favoriteList.size}")
-
-
 
         favoriteList.apply {
             this.remove(this.firstOrNull { gif -> gif.id == id })
