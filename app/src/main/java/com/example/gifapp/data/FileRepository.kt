@@ -7,7 +7,10 @@ import android.os.Environment
 import android.util.Log
 import androidx.core.content.FileProvider
 import com.example.gifapp.model.Gif
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
@@ -21,6 +24,11 @@ class FileRepository(private val context: Context) {
     private var favoriteList = ArrayBlockingQueue<Gif>(1024)
     private var imageDir: File? = null
     private var bitmap: Bitmap? = null
+
+    private var _favoriteFlow = MutableStateFlow(favoriteList.size)
+    val favoriteFlow: StateFlow<Int> = _favoriteFlow
+
+
 
     companion object {
         private var instance: FileRepository? = null
@@ -79,6 +87,9 @@ class FileRepository(private val context: Context) {
         Log.i(TAG, "--> addToFavotite: Before.size[${favoriteList.size}]")
         Log.i(TAG, "--> addToFavotite: Before[${gif.id}]")
         favoriteList.add(gif)
+        CoroutineScope(Dispatchers.IO).launch {
+            _favoriteFlow.emit(favoriteList.size)
+        }
         Log.i(TAG, "--> addToFavotite: After[${favoriteList.size}]")
     }
 
@@ -99,22 +110,34 @@ class FileRepository(private val context: Context) {
         favoriteList.apply {
             this.clear()
         }
+        CoroutineScope(Dispatchers.IO).launch {
+            _favoriteFlow.emit(favoriteList.size)
+        }
     }
 
     fun deleteById(id: String) {
         val dir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
         Log.i(TAG, "--> deleteFromStorage: before=${dir?.listFiles()?.size}")
-
-        dir?.listFiles()?.filter { gifId ->
-            gifId.name.contains(id)
-        }
-            ?.forEach { it.deleteRecursively() }
+//
+//        dir?.listFiles()?.filter { gifId ->
+//            gifId.name.contains(id)
+//        }
+//            ?.forEach { it.deleteRecursively() }
         Log.i(TAG, "--> deleteById: BQ.size.before=${favoriteList.size}")
+
+
+
         favoriteList.apply {
             this.remove(this.firstOrNull { gif -> gif.id == id })
         }
+        CoroutineScope(Dispatchers.IO).launch {
+            _favoriteFlow.emit(favoriteList.size)
+        }
+
         Log.i(TAG, "--> deleteById: BQ.size.after=${favoriteList.size}")
         Log.i(TAG, "--> deleteFromStorage: after=${dir?.listFiles()?.size}")
-
+    }
+    fun getFavoriteList(): List<Gif>{
+        return favoriteList.toList()
     }
 }

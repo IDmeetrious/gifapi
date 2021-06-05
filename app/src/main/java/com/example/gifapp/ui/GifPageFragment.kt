@@ -33,7 +33,6 @@ class GifPageFragment : Fragment() {
     private lateinit var likeBtn: FloatingActionButton
     private lateinit var shareBtn: FloatingActionButton
     private var currentPosition = 0
-    private var favoriteCounter = 0
     private var gif = Gif()
 
     private lateinit var repository: FileRepository
@@ -66,7 +65,7 @@ class GifPageFragment : Fragment() {
         view.apply {
             viewPager = findViewById(R.id.page_viewpager)
             likeBtn = findViewById(R.id.page_like)
-            shareBtn = findViewById(R.id.fullscreen_fab)
+            shareBtn = findViewById(R.id.fullscreen_share_fab)
         }
         viewPager.isNestedScrollingEnabled = false
 
@@ -115,7 +114,6 @@ class GifPageFragment : Fragment() {
             viewModel.getRandom()
             viewModel.setLikeBtnState(false)
         }
-        favoriteCounter = 0
     }
 
     //*** Random page is Done! ***
@@ -126,12 +124,24 @@ class GifPageFragment : Fragment() {
             shareWith()
         }
 
-        likeBtn.setOnClickListener {
-            Log.i(TAG, "--> initRandom: Add to favorites")
-            viewModel.updateLikeBtnState()
 
-            if (favoriteCounter == 0) repository.addToFavorite(gif)
-            favoriteCounter++
+        likeBtn.setOnClickListener {
+//            viewModel.updateLikeBtnState()
+            viewModel.let {
+                if (it.likeBtnState.value == false) {
+                    Log.i(TAG, "--> initRandom: Add to favorites")
+                    it.setLikeBtnState(true)
+                    viewModel.addFavorite(gif)
+                } else {
+                    Log.i(TAG, "initRandom: Delete from favorite")
+                    it.setLikeBtnState(false)
+                    viewModel.deleteFavorite(gif)
+                }
+
+            }
+//
+//            if (favoriteCounter == 0) repository.addToFavorite(gif)
+//            favoriteCounter++
 
             Log.i(TAG, "--> initRandom: State[${viewModel.likeBtnState.value}]")
         }
@@ -140,7 +150,10 @@ class GifPageFragment : Fragment() {
     private fun shareWith() {
         Log.i(TAG, "--> initRandom: Share with")
         val file =
-            File(requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES), "${gif.id}.gif")
+            File(
+                requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES),
+                "${gif.id}.gif"
+            )
         val uri = FileProvider.getUriForFile(requireContext(), "gifapp.fileprovider", file)
         Log.i(TAG, "--> initRandom: Uri[$uri]")
         val description = gif.description
@@ -158,6 +171,9 @@ class GifPageFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         Log.i(TAG, "--> onResume: ")
+
+        // Refresh like button state due availability in favorite list
+        viewModel.setLikeBtnState(viewModel.getFavorite(gif))
     }
 
     override fun onPause() {
@@ -169,7 +185,7 @@ class GifPageFragment : Fragment() {
         super.onStop()
         Log.i(TAG, "--> onStop: ")
     }
-    
+
     override fun onDestroyView() {
         super.onDestroyView()
         Log.i(TAG, "--> onDestroyView: ")
@@ -177,12 +193,13 @@ class GifPageFragment : Fragment() {
 
     override fun onDestroy() {
         Log.i(TAG, "--> onDestroy: ")
-        CoroutineScope(Dispatchers.IO).launch{
-            repository.clearStorage()
-        }
+//        CoroutineScope(Dispatchers.IO).launch{
+//            repository.clearStorage()
+//        }
+        viewModel.clearRepository()
         super.onDestroy()
     }
-    
+
     override fun onDetach() {
         super.onDetach()
         Log.i(TAG, "--> onDetach: ")

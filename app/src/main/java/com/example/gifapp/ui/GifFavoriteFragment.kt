@@ -10,6 +10,7 @@ import android.widget.CheckBox
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.selection.SelectionPredicates
 import androidx.recyclerview.selection.SelectionTracker
 import androidx.recyclerview.selection.StableIdKeyProvider
@@ -39,6 +40,8 @@ class GifFavoriteFragment : Fragment() {
     private lateinit var repository: FileRepository
     private var gif: Gif? = null
     private var selectedCount: Int = 0
+    private var fullScreenFragment: GifFullScreenFragment? = null
+    private var fmCallbackInstance: FragmentManager.FragmentLifecycleCallbacks? = null
 
     // Multi selection
     private var tracker: SelectionTracker<Long>? = null
@@ -49,11 +52,21 @@ class GifFavoriteFragment : Fragment() {
     private lateinit var selectedTv: TextView
     private lateinit var selectAllCb: CheckBox
     private var sheetBehavior: BottomSheetBehavior<*>? = null
+    private var sheetCallback: BottomSheetBehavior.BottomSheetCallback? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (savedInstanceState != null)
             tracker?.onRestoreInstanceState(savedInstanceState)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        if(fullScreenFragment == null) fullScreenFragment = GifFullScreenFragment()
+        // Add bottom dialog fragment lifecycle callbacks
+        addDialogStatusListener()
+        // Add bottom sheet callbacks
+        addBottomSheetCallbacks()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -84,14 +97,13 @@ class GifFavoriteFragment : Fragment() {
                     // If dialog was created dismiss
                     Log.i(TAG, "--> onCreateView: moveToFullScreen")
 
-                    val fragment = GifFullScreenFragment()
-                    fragment.arguments = args
-                    fragment.show(childFragmentManager, "GifFullScreenFragment")
+//                    val fragment = GifFullScreenFragment()
+                    fullScreenFragment?.arguments = args
+                    fullScreenFragment?.show(childFragmentManager, "GifFullScreenFragment")
+
                 }
             }
         })
-
-
 
         return rootView
     }
@@ -111,17 +123,16 @@ class GifFavoriteFragment : Fragment() {
             adapter.selectedData.collect {
                 adapter.updateData(it)
             }
-
         }
 
         selectAllCb.setOnCheckedChangeListener { buttonView, isChecked ->
             if (isChecked) {
                 Log.i(TAG, "--> onViewCreated: ${adapter.itemCount}")
-                for (i in 0..adapter.itemCount){
+                for (i in 0..adapter.itemCount) {
                     tracker?.select(i.toLong())
                 }
             } else {
-                for (i in 0..adapter.itemCount){
+                for (i in 0..adapter.itemCount) {
                     tracker?.deselect(i.toLong())
                 }
 
@@ -137,6 +148,23 @@ class GifFavoriteFragment : Fragment() {
                 selectedTv.text = "Selected: $it"
                 if (it == 0) selectAllCb.isChecked = false
             }
+        }
+    }
+
+    private fun addDialogStatusListener() {
+        fmCallbackInstance = object : FragmentManager.FragmentLifecycleCallbacks() {
+            override fun onFragmentStopped(fm: FragmentManager, f: Fragment) {
+                super.onFragmentStopped(fm, f)
+                if (f == fullScreenFragment) {
+                    Log.i(TAG, "onFragmentStopped: FullScreenDialog")
+                    adapter.updateData(repository.getFavoriteList())
+                }
+            }
+        }
+        fmCallbackInstance?.let {
+            childFragmentManager.registerFragmentLifecycleCallbacks(
+                it, true
+            )
         }
     }
 
@@ -166,12 +194,15 @@ class GifFavoriteFragment : Fragment() {
         selectedTv = view.findViewById(R.id.favorite_bottom_select_tv)
         selectedTv.text = "Selected: $selectedCount"
 
-
         deleteBy()
 
         sheetBehavior = BottomSheetBehavior.from(bottomLayout)
         sheetBehavior?.state = BottomSheetBehavior.STATE_HIDDEN
-        sheetBehavior?.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+
+    }
+
+    private fun addBottomSheetCallbacks() {
+        sheetCallback = object : BottomSheetBehavior.BottomSheetCallback() {
             override fun onStateChanged(bottomSheet: View, newState: Int) {
                 when (newState) {
                     BottomSheetBehavior.STATE_HIDDEN -> {
@@ -207,8 +238,10 @@ class GifFavoriteFragment : Fragment() {
                 Log.i(TAG, "--> onSlide: ")
             }
 
-        })
-
+        }
+        sheetCallback?.let {
+            sheetBehavior?.addBottomSheetCallback(it)
+        }
     }
 
     private fun deleteBy() {
@@ -250,5 +283,23 @@ class GifFavoriteFragment : Fragment() {
         Log.i(TAG, "--> onResume: ")
 
         updateFavoriteList()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        // Clear bottom fragment
+        fullScreenFragment = null
+
+        // Clear bottom dialog callbacks
+        fmCallbackInstance?.let {
+            childFragmentManager.unregisterFragmentLifecycleCallbacks(
+                it
+            )
+        }
+
+        // Clear bottom sheet callbacks
+        sheetCallback?.let {
+            sheetBehavior?.removeBottomSheetCallback(it)
+        }
     }
 }

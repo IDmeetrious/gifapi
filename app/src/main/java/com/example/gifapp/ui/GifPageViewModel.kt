@@ -9,6 +9,8 @@ import com.example.gifapp.App
 import com.example.gifapp.api.ApiClient
 import com.example.gifapp.data.FileRepository
 import com.example.gifapp.model.Gif
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
@@ -79,5 +81,24 @@ class GifPageViewModel : ViewModel() {
 
     fun setLikeBtnState(state: Boolean) {
         _likeBtnState.postValue(state)
+    }
+
+    fun addFavorite(gif: Gif){
+        repository.addToFavorite(gif)
+    }
+
+    fun getFavorite(gif: Gif): Boolean{
+        return repository.getFavoriteList().contains(gif)
+    }
+
+    fun clearRepository(){
+        Log.i(TAG, "clearRepository: ")
+        CoroutineScope(Dispatchers.IO).launch {
+            repository.clearStorage()
+        }
+    }
+
+    fun deleteFavorite(gif: Gif) {
+        repository.deleteById(gif.id)
     }
 }

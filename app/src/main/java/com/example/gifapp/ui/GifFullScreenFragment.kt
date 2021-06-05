@@ -13,11 +13,16 @@ import androidx.core.content.FileProvider
 import androidx.fragment.app.DialogFragment
 import com.bumptech.glide.Glide
 import com.example.gifapp.R
+import com.example.gifapp.data.FileRepository
 import com.example.gifapp.model.Gif
 import com.example.gifapp.utils.Constants.GIF_DESC
 import com.example.gifapp.utils.Constants.GIF_ID
 import com.example.gifapp.utils.Constants.GIF_URI
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import java.io.File
 
 private const val TAG = "GifFullScreenFragment"
@@ -27,7 +32,30 @@ class GifFullScreenFragment : DialogFragment() {
     private lateinit var image: ImageView
     private lateinit var desc: TextView
     private lateinit var shareBtn: FloatingActionButton
+    private lateinit var deleteBtn: FloatingActionButton
+
     private var gif = Gif()
+    private var counter = 0
+    private lateinit var repository: FileRepository
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        repository = FileRepository.getInstance(requireContext())
+    }
+
+    override fun onStart() {
+        super.onStart()
+        counter = repository.getFavoriteList().size
+
+        Log.i(TAG, "onStart: counter=$counter")
+        CoroutineScope(Dispatchers.Main).launch {
+            repository.favoriteFlow.collect {
+                Log.i(TAG, "onStart: favoriteFlow.size=${it}")
+                if (it != counter)
+                    dismiss()
+            }
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -39,7 +67,8 @@ class GifFullScreenFragment : DialogFragment() {
         rootView.let {
             image = it.findViewById(R.id.fullscreen_iv)
             desc = it.findViewById(R.id.fullscreen_tv)
-            shareBtn = it.findViewById(R.id.fullscreen_fab)
+            shareBtn = it.findViewById(R.id.fullscreen_share_fab)
+            deleteBtn = it.findViewById(R.id.fullscreen_delete_fab)
         }
 
         receiveGifBundle()
@@ -61,6 +90,17 @@ class GifFullScreenFragment : DialogFragment() {
 
         shareBtn.setOnClickListener {
             shareWith()
+        }
+
+        deleteBtn.setOnClickListener {
+            deleteFromFavorite()
+        }
+    }
+
+    private fun deleteFromFavorite() {
+        Log.i(TAG, "deleteFromFavorite: ")
+        CoroutineScope(Dispatchers.IO).launch {
+            repository.deleteById(gif.id)
         }
     }
 
@@ -98,5 +138,15 @@ class GifFullScreenFragment : DialogFragment() {
             gif.description = requireArguments().getString(GIF_DESC, "")
             gif.gifURL = requireArguments().getString(GIF_URI, "")
         }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Log.i(TAG, "onPause: ")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Log.i(TAG, "onStop: ")
     }
 }
