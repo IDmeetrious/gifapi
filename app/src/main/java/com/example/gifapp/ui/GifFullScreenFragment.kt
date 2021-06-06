@@ -34,13 +34,14 @@ class GifFullScreenFragment : DialogFragment() {
     private lateinit var shareBtn: FloatingActionButton
     private lateinit var deleteBtn: FloatingActionButton
 
-    private var gif = Gif()
+    private var gif: Gif? = null
     private var counter = 0
     private lateinit var repository: FileRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         repository = FileRepository.getInstance(requireContext())
+        receiveGifBundle()
     }
 
     override fun onStart() {
@@ -71,7 +72,6 @@ class GifFullScreenFragment : DialogFragment() {
             deleteBtn = it.findViewById(R.id.fullscreen_delete_fab)
         }
 
-        receiveGifBundle()
         loadImageView()
         initViews()
 
@@ -100,43 +100,65 @@ class GifFullScreenFragment : DialogFragment() {
     private fun deleteFromFavorite() {
         Log.i(TAG, "deleteFromFavorite: ")
         CoroutineScope(Dispatchers.IO).launch {
-            repository.deleteById(gif.id)
+            gif?.let {
+                repository.deleteById(it.id)
+            }
+
         }
     }
 
     private fun shareWith() {
-        Log.i(TAG, "--> initRandom: Share with")
-        Log.i(TAG, "--> initRandom: Uri[${gif.gifURL}]")
-        Log.i(TAG, "--> initRandom: Text[${gif.description}]")
-        val file =
-            File(
-                requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES),
-                "${gif.id}.gif"
-            )
-        val uri = FileProvider.getUriForFile(requireContext(), "gifapp.fileprovider", file)
-        val intent = Intent().apply {
-            this.action = Intent.ACTION_SEND
-            this.putExtra(Intent.EXTRA_TEXT, gif.description)
-            this.putExtra(Intent.EXTRA_STREAM, uri)
-            this.type = "image/gif"
-            this.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+        gif?.let {
+            Log.i(TAG, "--> initRandom: Share with")
+            Log.i(TAG, "--> initRandom: Uri[${it.gifURL}]")
+            Log.i(TAG, "--> initRandom: Text[${it.description}]")
+            val file =
+                File(
+                    requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES),
+                    "${it.id}.gif"
+                )
+            val uri = FileProvider.getUriForFile(requireContext(), "gifapp.fileprovider", file)
+            val intent = Intent().apply {
+                this.action = Intent.ACTION_SEND
+                this.putExtra(Intent.EXTRA_TEXT, it.description)
+                this.putExtra(Intent.EXTRA_STREAM, uri)
+                this.type = "image/gif"
+                this.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+            }
+            startActivity(intent)
         }
-        startActivity(intent)
+
     }
 
     private fun loadImageView() {
-        Glide.with(requireContext())
-            .asGif()
-            .load(gif.gifURL)
-            .into(image)
-        desc.text = gif.description
+        gif?.let {
+            Glide.with(requireContext())
+                .asGif()
+                .load(it.gifURL)
+                .into(image)
+            desc.text = it.description
+        }
+
     }
 
     private fun receiveGifBundle() {
         if (arguments != null) {
-            gif.id = requireArguments().getString(GIF_ID, "")
-            gif.description = requireArguments().getString(GIF_DESC, "")
-            gif.gifURL = requireArguments().getString(GIF_URI, "")
+            Log.i(TAG, "--> receiveGifBundle: Arguments.NotNull")
+            if (gif == null)
+                gif = Gif(
+                    id = requireArguments().getString(GIF_ID, ""),
+                    description = requireArguments().getString(GIF_DESC, ""),
+                    gifURL = requireArguments().getString(GIF_URI, "")
+                )
+            else gif?.apply {
+                id = requireArguments().getString(GIF_ID, "")
+                description = requireArguments().getString(GIF_DESC, "")
+                gifURL = requireArguments().getString(GIF_URI, "")
+            }
+
+            Log.i(TAG, "--> receiveGifBundle: id=${gif?.id}")
+            Log.i(TAG, "--> receiveGifBundle: description=${gif?.description}")
+            Log.i(TAG, "--> receiveGifBundle: uri=${gif?.gifURL}")
         }
     }
 

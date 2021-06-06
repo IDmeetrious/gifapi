@@ -58,15 +58,19 @@ class GifFavoriteFragment : Fragment() {
         super.onCreate(savedInstanceState)
         if (savedInstanceState != null)
             tracker?.onRestoreInstanceState(savedInstanceState)
+        if (fullScreenFragment == null) fullScreenFragment = GifFullScreenFragment()
+        repository = FileRepository.getInstance(requireContext())
     }
 
     override fun onStart() {
         super.onStart()
-        if(fullScreenFragment == null) fullScreenFragment = GifFullScreenFragment()
+
         // Add bottom dialog fragment lifecycle callbacks
         addDialogStatusListener()
         // Add bottom sheet callbacks
         addBottomSheetCallbacks()
+        //Init list from database
+        adapter.updateData(repository.loadFromDatabase())
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -81,26 +85,28 @@ class GifFavoriteFragment : Fragment() {
     ): View? {
         val rootView = inflater.inflate(R.layout.fragment_favorite, container, false)
 
-        adapter = GifFavoriteAdapter(listOf())
+        adapter = GifFavoriteAdapter(emptyList())
         adapter.gif.observe(viewLifecycleOwner, { mGif ->
             gif = mGif
             gif?.let {
+                Log.i(TAG, "--> onCreateView: gif.id=${it.id}")
+                Log.i(TAG, "--> onCreateView: gif.desc=${it.description}")
+                Log.i(TAG, "--> onCreateView: gif.uri=${it.gifURL}")
+                // here
                 val args = Bundle().apply {
                     Log.i(TAG, "--> onCreateView: id[${it.id}]")
-                    this.putString(GIF_ID, it.id)
+                    putString(GIF_ID, it.id)
                     Log.i(TAG, "--> onCreateView: description[${it.description}]")
-                    this.putString(GIF_DESC, it.description)
+                    putString(GIF_DESC, it.description)
                     Log.i(TAG, "--> onCreateView: uri[${it.gifURL}]")
-                    this.putString(GIF_URI, it.gifURL)
+                    putString(GIF_URI, it.gifURL)
                 }
-                if (it.gifURL.isNotEmpty() && adapter.isEditable.value == false) {
+                if (adapter.isEditable.value == false) {
                     // If dialog was created dismiss
                     Log.i(TAG, "--> onCreateView: moveToFullScreen")
 
-//                    val fragment = GifFullScreenFragment()
                     fullScreenFragment?.arguments = args
                     fullScreenFragment?.show(childFragmentManager, "GifFullScreenFragment")
-
                 }
             }
         })
@@ -139,7 +145,6 @@ class GifFavoriteFragment : Fragment() {
             }
         }
 
-        repository = FileRepository.getInstance(requireContext())
 
         CoroutineScope(Dispatchers.Main).launch {
             adapter.selectedCount.collect {
@@ -282,13 +287,12 @@ class GifFavoriteFragment : Fragment() {
         super.onResume()
         Log.i(TAG, "--> onResume: ")
 
-        updateFavoriteList()
+//        updateFavoriteList()
+        adapter.updateData(repository.loadFromDatabase())
     }
 
     override fun onStop() {
         super.onStop()
-        // Clear bottom fragment
-        fullScreenFragment = null
 
         // Clear bottom dialog callbacks
         fmCallbackInstance?.let {
@@ -301,5 +305,11 @@ class GifFavoriteFragment : Fragment() {
         sheetCallback?.let {
             sheetBehavior?.removeBottomSheetCallback(it)
         }
+    }
+
+    override fun onDestroy() {
+        // Clear bottom fragment
+        fullScreenFragment = null
+        super.onDestroy()
     }
 }
