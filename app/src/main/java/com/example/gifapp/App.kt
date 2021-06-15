@@ -1,19 +1,19 @@
 package com.example.gifapp
 
 import android.app.Application
-import android.content.Context
 
 private const val TAG = "App"
 class App: Application() {
     companion object{
-        private var context: Context? = null
-        fun getContext(): Context{
-            return this.context!!
+        private var instance: App? = null
+        fun getInstance(): App{
+            if (instance == null) instance = App()
+            return instance as App
         }
     }
 
     override fun onCreate() {
         super.onCreate()
-        context = applicationContext
+        instance = this
     }
 }

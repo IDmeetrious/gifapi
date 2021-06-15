@@ -24,6 +24,8 @@ private const val TAG = "GifFavoriteAdapter"
 
 class GifFavoriteAdapter(private var data: List<Gif>) :
     RecyclerView.Adapter<GifFavoriteViewHolder>() {
+    private var repository: FileRepository? = null
+    private var context = App.getInstance().applicationContext
 
     private var tracker: SelectionTracker<Long>? = null
     private var _selectedList: MutableList<String> = mutableListOf()
@@ -36,6 +38,7 @@ class GifFavoriteAdapter(private var data: List<Gif>) :
 
     init {
         setHasStableIds(true)
+        repository = FileRepository.getInstance(context)
     }
 
     /** Created by ID
@@ -151,7 +154,7 @@ class GifFavoriteAdapter(private var data: List<Gif>) :
             Log.i(TAG, "--> deleteSelected: filtered.data[${list.size}]")
             list.forEach {
                 Log.i(TAG, "--> deleteSelected: id[$it]")
-                FileRepository.getInstance(App.getContext()).deleteById(it)
+                repository?.deleteById(it)
             }
 
             CoroutineScope(Dispatchers.IO).launch {

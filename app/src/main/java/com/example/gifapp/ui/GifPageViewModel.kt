@@ -9,19 +9,18 @@ import com.example.gifapp.App
 import com.example.gifapp.api.ApiClient
 import com.example.gifapp.data.FileRepository
 import com.example.gifapp.model.Gif
+import io.reactivex.rxjava3.disposables.Disposable
+import io.reactivex.rxjava3.schedulers.Schedulers
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.HttpException
-import retrofit2.Response
 
 private const val TAG = "GifPageViewModel"
 
 class GifPageViewModel : ViewModel() {
 
-    private val repository = FileRepository.getInstance(App.getContext())
+    private val repository = FileRepository.getInstance(App.getInstance().applicationContext)
+    private var disposable: Disposable? = null
 
     private val apiClient = ApiClient()
     private val tempRandom = ArrayList<Gif>()
@@ -36,41 +35,33 @@ class GifPageViewModel : ViewModel() {
 
     private var _gifLive = MutableLiveData<Gif>()
     val gifLive: LiveData<Gif>
-    get() = _gifLive
+        get() = _gifLive
 
     init {
         _likeBtnState.value = false
     }
 
     fun getRandom() {
-        val randomGifCall = apiClient.apiRequests.getRandom()
+        val randomGif = apiClient.apiRequests.getRandom()
 
-        try {
-            randomGifCall.enqueue(object : Callback<Gif> {
-                override fun onResponse(call: Call<Gif>, response: Response<Gif>) {
-                    if (response.isSuccessful && response.body()?.gifURL?.isEmpty() != true) {
-                        tempRandom.add(response.body()!!)
-
-                        viewModelScope.launch {
-                            response.body()?.let {
-                                Log.i(TAG, "--> onResponse: ${it.description}\n")
-                                _gifLive.postValue(it)
-
-                                repository.saveLocally(it)
-                            }
-                        }
-                        _data.value = tempRandom
-                        Log.i(TAG, "onRandomResponse: ${response.body()}")
+        disposable = randomGif
+            .subscribeOn(Schedulers.io())
+            .subscribe({ response ->
+                response?.let {
+                    Log.i(
+                        TAG, "--> getRandom: ${it.id}" +
+                                it.description
+                    )
+                    tempRandom.add(it)
+                    _gifLive.postValue(it)
+                    viewModelScope.launch {
+                        repository.saveLocally(it)
                     }
+                    _data.postValue(tempRandom)
                 }
-
-                override fun onFailure(call: Call<Gif>, t: Throwable) {
-                    t.printStackTrace()
-                }
+            }, { error ->
+                error.cause
             })
-        } catch (e: HttpException) {
-            Log.e(TAG, "ERROR getRandom: ${e.message}")
-        }
     }
 
     fun updateLikeBtnState() {
@@ -83,15 +74,15 @@ class GifPageViewModel : ViewModel() {
         _likeBtnState.postValue(state)
     }
 
-    fun addFavorite(gif: Gif){
+    fun addFavorite(gif: Gif) {
         repository.addToFavorite(gif)
     }
 
-    fun getFavorite(gif: Gif): Boolean{
+    fun getFavorite(gif: Gif): Boolean {
         return repository.getFavoriteList().contains(gif)
     }
 
-    fun clearRepository(){
+    fun clearRepository() {
         Log.i(TAG, "clearRepository: ")
         CoroutineScope(Dispatchers.IO).launch {
             repository.clearStorage()
@@ -100,5 +91,10 @@ class GifPageViewModel : ViewModel() {
 
     fun deleteFavorite(gif: Gif) {
         repository.deleteById(gif.id)
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        disposable?.dispose()
     }
 }
