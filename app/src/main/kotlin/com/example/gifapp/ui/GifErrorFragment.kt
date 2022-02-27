@@ -13,37 +13,28 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 
 class GifErrorFragment : Fragment() {
-    private lateinit var tryBtn: FloatingActionButton
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_gif_error, container, false)
-        tryBtn = view.findViewById(R.id.error_refresh_fab)
-        return view
-    }
+    private var tryBtn: FloatingActionButton? = null
 
-    override fun onStart() {
-        super.onStart()
-
-        tryBtn.setOnClickListener {
-            if (NetworkUtil(requireContext()).onNetworkAvailable())
-                view?.findNavController()!!.navigateUp()
-            else
-                Snackbar.make(
-                    requireView(),
-                    getString(R.string.no_internet_connection),
-                    Snackbar.LENGTH_SHORT
-                )
-                    .show()
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+        inflater.inflate(R.layout.fragment_gif_error, container, false).apply {
+            tryBtn = findViewById(R.id.error_refresh_fab)
         }
-    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner){
-            requireActivity().finish()
+
+        activity?.apply {
+            onBackPressedDispatcher.addCallback(viewLifecycleOwner) { finish() }
+        }
+
+        tryBtn?.setOnClickListener {
+            context?.let {
+                if (NetworkUtil(it).isNetworkAvailable()) {
+                    view.findNavController().navigateUp()
+                } else {
+                    Snackbar.make(view, getString(R.string.no_internet_connection), Snackbar.LENGTH_SHORT).show()
+                }
+            }
         }
     }
 }

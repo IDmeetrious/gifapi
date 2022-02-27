@@ -1,17 +1,14 @@
 package com.example.gifapp.ui
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.example.gifapp.App
 import com.example.gifapp.api.ApiClient
 import com.example.gifapp.data.FileRepository
-import com.example.gifapp.model.Gif
+import com.example.gifapp.data.db.Gif
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.schedulers.Schedulers
-import kotlinx.coroutines.launch
 
 private const val TAG = "GifPageViewModel"
 

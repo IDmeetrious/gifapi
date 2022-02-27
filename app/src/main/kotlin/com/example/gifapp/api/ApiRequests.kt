@@ -1,10 +1,8 @@
 package com.example.gifapp.api
 
-import com.example.gifapp.model.Gif
-import com.example.gifapp.model.GifResponse
+import com.example.gifapp.data.db.Gif
 import io.reactivex.rxjava3.core.Single
 import retrofit2.http.GET
-import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface ApiRequests {
@@ -13,10 +11,4 @@ interface ApiRequests {
     fun getRandom(
         @Query("json") json: Boolean = true
     ): Single<Gif>
-
-    @GET("top/{page}?json=true")
-    fun getTop(
-        @Path("page") page: Int,
-        @Query("json") json: Boolean = true
-    ): Single<GifResponse>
 }
