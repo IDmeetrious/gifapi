@@ -5,23 +5,17 @@ plugins {
 }
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 32
     buildToolsVersion "30.0.3"
 
     defaultConfig {
         applicationId "com.example.gifapp"
         minSdkVersion 21
-        targetSdkVersion 30
+        targetSdkVersion 32
         versionCode 2
         versionName "1.0.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-
-        externalNativeBuild {
-            cmake {
-                cppFlags "-std=c++17"
-            }
-        }
     }
 
     buildTypes {
@@ -35,15 +29,15 @@ android {
         }
     }
 
-    flavorDimensions "flavor"
+    flavorDimensions "version"
     productFlavors {
         demo {
-            dimension "flavor"
+            dimension "version"
             applicationIdSuffix ".demo"
             versionNameSuffix "-demo"
         }
         standart {
-            dimension "flavor"
+            dimension "version"
             applicationIdSuffix ".standart"
             versionNameSuffix "-standart"
         }
@@ -56,30 +50,23 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
-
-    externalNativeBuild {
-        cmake {
-            path "src/main/cpp/CMakeLists.txt"
-            version "3.10.2"
-        }
-    }
 }
 
 dependencies {
     def glide_version = "4.12.0"
-    def lifecycle_version = "2.3.1"
-    def nav_version = "2.3.5"
+    def lifecycle_version = "2.4.1"
+    def nav_version = "2.4.1"
     def retrofit_version = "2.9.0"
-    def room_version = "2.3.0"
+    def room_version = "2.4.2"
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    implementation 'androidx.core:core-ktx:1.5.0'
-    implementation 'androidx.appcompat:appcompat:1.3.0'
-    implementation 'com.google.android.material:material:1.3.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
+    implementation 'androidx.core:core-ktx:1.7.0'
+    implementation 'androidx.appcompat:appcompat:1.4.1'
+    implementation 'com.google.android.material:material:1.5.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.3'
     testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 
     // Retrofit2
     implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
@@ -108,7 +95,7 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-viewmodel-savedstate:$lifecycle_version"
 
     // Shared viewModel
-    implementation 'androidx.fragment:fragment-ktx:1.3.4'
+    implementation 'androidx.fragment:fragment-ktx:1.4.1'
 
     // SwipeRefreshLayout
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"

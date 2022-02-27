@@ -17,7 +17,8 @@
         android:theme="@style/Theme.GifApp"
         tools:targetApi="m">
         <activity android:name=".ui.GifActivity"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

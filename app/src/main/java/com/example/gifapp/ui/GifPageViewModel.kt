@@ -11,8 +11,6 @@ import com.example.gifapp.data.FileRepository
 import com.example.gifapp.model.Gif
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.schedulers.Schedulers
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 private const val TAG = "GifPageViewModel"
@@ -47,17 +45,11 @@ class GifPageViewModel : ViewModel() {
         disposable = randomGif
             .subscribeOn(Schedulers.io())
             .subscribe({ response ->
-                response?.let {
-                    Log.i(
-                        TAG, "--> getRandom: ${it.id}" +
-                                it.description
-                    )
+                response.let {
                     tempRandom.add(it)
                     _gifLive.postValue(it)
-                    viewModelScope.launch {
-                        repository.saveLocally(it)
-                    }
                     _data.postValue(tempRandom)
+                    repository.saveLocally(it)
                 }
             }, { error ->
                 error.cause
@@ -78,15 +70,10 @@ class GifPageViewModel : ViewModel() {
         repository.addToFavorite(gif)
     }
 
-    fun getFavorite(gif: Gif): Boolean {
-        return repository.getFavoriteList().contains(gif)
-    }
+    fun getFavorite(gif: Gif): Boolean = repository.getFavoriteList().contains(gif)
 
     fun clearRepository() {
-        Log.i(TAG, "clearRepository: ")
-        CoroutineScope(Dispatchers.IO).launch {
-            repository.clearStorage()
-        }
+        repository.clearStorage()
     }
 
     fun deleteFavorite(gif: Gif) {

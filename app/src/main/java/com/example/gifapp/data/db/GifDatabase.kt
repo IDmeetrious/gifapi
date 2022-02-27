@@ -7,9 +7,11 @@ import androidx.room.RoomDatabase
 import com.example.gifapp.model.Gif
 
 @Database(entities = [Gif::class], version = 1)
-abstract class GifDatabase: RoomDatabase() {
+abstract class GifDatabase : RoomDatabase() {
+
     abstract fun gifDao(): GifDao
-    companion object{
+
+    companion object {
         @Volatile
         private var instance: GifDatabase? = null
         private val LOCK = Any()
@@ -22,7 +24,6 @@ abstract class GifDatabase: RoomDatabase() {
             context.applicationContext,
             GifDatabase::class.java,
             "gif_database"
-        )
-            .build()
+        ).build()
     }
 }

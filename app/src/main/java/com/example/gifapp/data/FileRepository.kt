@@ -3,7 +3,6 @@ package com.example.gifapp.data
 import android.content.Context
 import android.net.Uri
 import android.os.Environment
-import android.util.Log
 import androidx.core.content.FileProvider
 import com.example.gifapp.data.db.GifDatabase
 import com.example.gifapp.model.Gif
@@ -12,14 +11,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.io.File
 import java.io.FileOutputStream
-import java.io.IOException
 import java.net.URL
 import java.util.concurrent.ArrayBlockingQueue
-
-private const val TAG = "FileRepository"
 
 class FileRepository(private val context: Context) {
     private var favoriteList = ArrayBlockingQueue<Gif>(1024)
@@ -28,58 +22,41 @@ class FileRepository(private val context: Context) {
     private var _favoriteFlow = MutableStateFlow(favoriteList.size)
     val favoriteFlow: StateFlow<Int> = _favoriteFlow
 
-    companion object {
-        private var instance: FileRepository? = null
-
-        fun getInstance(context: Context): FileRepository {
-            if (instance == null) instance = FileRepository(context)
-            return instance as FileRepository
-        }
-    }
+    private val picturesDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
 
     init {
         db = GifDatabase.invoke(context)
         loadFromDatabase()
     }
 
-    suspend fun saveLocally(gif: Gif) {
+    fun saveLocally(gif: Gif) {
         val url = gif.gifURL
         val id = gif.id
-        Log.i(TAG, "--> saveLocally: $url")
-        Log.i(TAG, "--> saveLocally: $id")
 
-        // Save files in pictures
-        withContext(Dispatchers.IO) {
-            val input = URL(url).openStream()
-            input.use { inp ->
-                val storage: File? = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-                val output = FileOutputStream("$storage/$id.gif")
-                output.use {
-                    it.write(inp.readBytes())
-                }
+        val input = URL(url).openStream()
+        input.use { inp ->
+            val output = FileOutputStream("$picturesDir/$id.gif")
+            output.use {
+                it.write(inp.readBytes())
             }
         }
     }
 
     fun loadFromStorage(): List<Gif> {
         val list: MutableList<Uri> = mutableListOf()
-        val dir: File? = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-        Log.i(TAG, "--> loadFromStorage: ${dir?.listFiles()?.size}")
+        val temp: MutableList<Gif> = mutableListOf()
 
-        dir?.listFiles()?.forEach {
-            Log.i(TAG, "--> loadFromStorage: $it")
-            val uri = FileProvider.getUriForFile(context, "gifapp.fileprovider", it)
+        picturesDir?.listFiles()?.map {
+            val uri = FileProvider.getUriForFile(context, AUTHORITY, it)
             list.add(uri)
         }
-        val temp: MutableList<Gif> = mutableListOf()
-        favoriteList.forEach { gif ->
-            Log.i(TAG, "--> loadFromStorage: id[${gif.id}]")
+
+        favoriteList.map { gif ->
 
             val foundUri: Uri? = list.firstOrNull {
                 it.path!!.contains(gif.id)
             }
 
-            Log.i(TAG, "--> loadFromStorage: $foundUri")
             gif.gifURL = "$foundUri"
             temp.add(gif)
         }
@@ -88,71 +65,40 @@ class FileRepository(private val context: Context) {
     }
 
     fun addToFavorite(gif: Gif) {
-        Log.i(TAG, "--> addToFavotite: Before.size[${favoriteList.size}]")
-        Log.i(TAG, "--> addToFavotite: Before[${gif.id}]")
         favoriteList.add(gif)
 
         CoroutineScope(Dispatchers.IO).launch {
-            // Save gifs models in database
-            Log.i(TAG, "--> addToDatabase: ${gif.id}")
-            db?.let {
-                try {
-                    it.gifDao().insert(gif)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-            }
+            db?.gifDao()?.insert(gif)
             _favoriteFlow.emit(favoriteList.size)
         }
-        Log.i(TAG, "--> addToFavotite: After[${favoriteList.size}]")
     }
 
     fun clearStorage() {
-        val storage = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
         var dbData: List<Gif> = emptyList()
 
         CoroutineScope(Dispatchers.IO).launch {
             db?.gifDao()?.let { dbData = it.getAll() }
         }
 
-        storage?.listFiles()?.forEach { file ->
-            try {
-                val dbGif = dbData.firstOrNull { gif -> file.name.contains(gif.id) }
-                if (dbGif == null || !file.name.contains(dbGif.id)) {
-                    Log.i(TAG, "--> clearStorage: Delete.file[${file.name}]")
-                    file.deleteRecursively()
-                }
-            } catch (e: IOException) {
-                e.printStackTrace()
+        picturesDir?.listFiles()?.map { file ->
+            val dbGif = dbData.firstOrNull { gif -> file.name.contains(gif.id) }
+            if (dbGif == null || !file.name.contains(dbGif.id)) {
+                file.deleteRecursively()
             }
         }
 
-        favoriteList.apply {
-            this.clear()
-        }
+        favoriteList.clear()
+
         CoroutineScope(Dispatchers.IO).launch {
             _favoriteFlow.emit(favoriteList.size)
         }
     }
 
     fun deleteById(id: String) {
-        val dir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-        Log.i(TAG, "--> deleteFromStorage: before=${dir?.listFiles()?.size}")
-        Log.i(TAG, "--> deleteById: BQ.size.before=${favoriteList.size}")
-
-
         CoroutineScope(Dispatchers.IO).launch {
             db?.let {
-                try {
-                    val match = favoriteList.first { gif -> gif.id == id }
-                    match?.let { gif ->
-                        it.gifDao().delete(
-                            gif
-                        )
-                    }
-
-                } catch (e: Exception) {
-                    e.printStackTrace()
+                favoriteList.firstOrNull { gif -> gif.id == id }?.let { gif ->
+                    it.gifDao().delete(gif)
                 }
             }
 
@@ -162,30 +108,30 @@ class FileRepository(private val context: Context) {
 
             _favoriteFlow.emit(favoriteList.size)
         }
-
-
-
-        Log.i(TAG, "--> deleteById: BQ.size.after=${favoriteList.size}")
-        Log.i(TAG, "--> deleteFromStorage: after=${dir?.listFiles()?.size}")
     }
 
-    fun getFavoriteList(): List<Gif> {
-        return favoriteList.toList()
-    }
+    fun getFavoriteList(): List<Gif> = favoriteList.toList()
+
 
     fun loadFromDatabase(): List<Gif> {
         CoroutineScope(Dispatchers.IO).launch {
             db?.let {
-                try {
-                    favoriteList.clear()
-                    favoriteList.addAll(it.gifDao().getAll())
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
+                favoriteList.clear()
+                favoriteList.addAll(it.gifDao().getAll())
+
             }
             _favoriteFlow.emit(favoriteList.size)
         }
         return getFavoriteList()
     }
 
+    companion object {
+        private const val AUTHORITY = "com.example.gifapp.fileprovider"
+        private var instance: FileRepository? = null
+
+        fun getInstance(context: Context): FileRepository {
+            if (instance == null) instance = FileRepository(context)
+            return instance as FileRepository
+        }
+    }
 }
