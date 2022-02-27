@@ -4,102 +4,84 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.gifapp.data.Repository
+import androidx.lifecycle.viewModelScope
+import com.example.gifapp.App
+import com.example.gifapp.api.ApiClient
+import com.example.gifapp.data.FileRepository
 import com.example.gifapp.model.Gif
-import com.example.gifapp.model.GifResponse
-import com.example.gifapp.other.GifApiStatus
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.HttpException
-import retrofit2.Response
+import io.reactivex.rxjava3.disposables.Disposable
+import io.reactivex.rxjava3.schedulers.Schedulers
+import kotlinx.coroutines.launch
 
 private const val TAG = "GifPageViewModel"
 
 class GifPageViewModel : ViewModel() {
-    private val _apiStatus = MutableLiveData<GifApiStatus>()
-    val apiStatus: LiveData<GifApiStatus>
-    get() = _apiStatus
 
-    private val repository = Repository()
+    private val repository = FileRepository.getInstance(App.getInstance().applicationContext)
+    private var disposable: Disposable? = null
+
+    private val apiClient = ApiClient()
     private val tempRandom = ArrayList<Gif>()
-    private val tempLatest = ArrayList<Gif>()
-    private val tempTop = ArrayList<Gif>()
 
     private val _data = MutableLiveData<MutableList<Gif>>()
     val data: LiveData<MutableList<Gif>>
         get() = _data
 
-    private val _prevBtnState = MutableLiveData<Boolean>()
-    val prevBtnState: LiveData<Boolean>
-        get() = _prevBtnState
+    private val _likeBtnState = MutableLiveData<Boolean>()
+    val likeBtnState: LiveData<Boolean>
+        get() = _likeBtnState
+
+    private var _gifLive = MutableLiveData<Gif>()
+    val gifLive: LiveData<Gif>
+        get() = _gifLive
 
     init {
-        setButtonState(false)
+        _likeBtnState.value = false
     }
 
     fun getRandom() {
-        val randomGifCall = repository.apiService.getRandom()
+        val randomGif = apiClient.apiRequests.getRandom()
 
-            try {
-                _apiStatus.value = GifApiStatus.LOADING
-                randomGifCall.enqueue(object : Callback<Gif> {
-                    override fun onResponse(call: Call<Gif>, response: Response<Gif>) {
-                        if (response.isSuccessful && response.body()?.gifURL?.isEmpty() != true) {
-                            tempRandom.add(response.body()!!)
-                            _data.value = tempRandom
-                            Log.d(TAG, "onRandomResponse: ${response.body()}")
-                        }
-                        _apiStatus.value = GifApiStatus.SUCCESS
-                    }
-
-                    override fun onFailure(call: Call<Gif>, t: Throwable) {
-                        t.printStackTrace()
-                        _apiStatus.value = GifApiStatus.ERROR
-                    }
-                })
-            } catch (e: HttpException) {
-                Log.i(TAG, "ERROR getRandom: ${e.message}")
-                _apiStatus.value = GifApiStatus.ERROR
-            }
-
-
+        disposable = randomGif
+            .subscribeOn(Schedulers.io())
+            .subscribe({ response ->
+                response.let {
+                    tempRandom.add(it)
+                    _gifLive.postValue(it)
+                    _data.postValue(tempRandom)
+                    repository.saveLocally(it)
+                }
+            }, { error ->
+                error.cause
+            })
     }
 
-    fun getLatest(page: Int = 0) {
-        val latestGifCall = repository.apiService.getLatest(page)
-        latestGifCall.enqueue(object : Callback<GifResponse> {
-            override fun onResponse(call: Call<GifResponse>, response: Response<GifResponse>) {
-                if (response.isSuccessful && !response.body()?.result.isNullOrEmpty()) {
-                    tempLatest.addAll(response.body()!!.result!!)
-                    _data.value = tempLatest
-                    Log.d(TAG, "onLatestResponse: ${response.body()!!.result}")
-                } else Log.d(TAG, "--> onLatestError: ${response.errorBody()}")
-            }
-
-            override fun onFailure(call: Call<GifResponse>, t: Throwable) {
-                t.printStackTrace()
-            }
-        })
+    fun updateLikeBtnState() {
+        likeBtnState.value.let {
+            _likeBtnState.value = !it!!
+        }
     }
 
-    fun getTop(page: Int = 0) {
-        val latestGifCall = repository.apiService.getTop(page)
-        latestGifCall.enqueue(object : Callback<GifResponse> {
-            override fun onResponse(call: Call<GifResponse>, response: Response<GifResponse>) {
-                if (response.isSuccessful && !response.body()?.result.isNullOrEmpty()) {
-                    tempTop.addAll(response.body()!!.result!!)
-                    _data.value = tempTop
-                    Log.d(TAG, "onTopResponse: ${response.body()!!.result}")
-                } else Log.d(TAG, "--> onTopError: ${response.errorBody()}")
-            }
-
-            override fun onFailure(call: Call<GifResponse>, t: Throwable) {
-                t.printStackTrace()
-            }
-        })
+    fun setLikeBtnState(state: Boolean) {
+        _likeBtnState.postValue(state)
     }
 
-    fun setButtonState(state: Boolean = true) {
-        _prevBtnState.value = state
+    fun addFavorite(gif: Gif) {
+        repository.addToFavorite(gif)
+    }
+
+    fun getFavorite(gif: Gif): Boolean = repository.getFavoriteList().contains(gif)
+
+    fun clearRepository() {
+        repository.clearStorage()
+    }
+
+    fun deleteFavorite(gif: Gif) {
+        repository.deleteById(gif.id)
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        disposable?.dispose()
     }
 }

@@ -1,4 +1,4 @@
-package com.example.gifapp.ui
+package com.example.gifapp.ui.adapters
 
 import android.view.View
 import android.widget.ImageView

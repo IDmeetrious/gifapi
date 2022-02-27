@@ -5,23 +5,21 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
 import com.bumptech.glide.Glide
 import com.example.gifapp.R
+import com.example.gifapp.ui.adapters.GifCategoriesAdapter
+import com.example.gifapp.utils.network.NetworkReceiverFragment
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 private const val TAG = "GifCategoriesFragment"
 
-class GifCategoriesFragment : Fragment() {
+class GifCategoriesFragment : NetworkReceiverFragment() {
 
-    private val sharedViewModel: GifPageViewModel by lazy{
-        ViewModelProvider(this).get(GifPageViewModel::class.java)
-    }
     private lateinit var categoriesAdapter: GifCategoriesAdapter
     private lateinit var viewPager: ViewPager2
     private lateinit var tabs: TabLayout
@@ -31,11 +29,10 @@ class GifCategoriesFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val mView = inflater.inflate(R.layout.fragment_gif_categories,container,false)
+        val mView = inflater.inflate(R.layout.fragment_gif_categories, container, false)
         mView.apply {
             viewPager = findViewById(R.id.tab_viewpager)
             tabs = findViewById(R.id.tab_layout)
-
         }
         return mView
     }
@@ -47,8 +44,7 @@ class GifCategoriesFragment : Fragment() {
         TabLayoutMediator(tabs, viewPager) { tab, position ->
             val tabItem = when (position) {
                 0 -> getString(R.string.random)
-                1 -> getString(R.string.latest)
-                2 -> getString(R.string.top)
+                1 -> getString(R.string.favorite)
                 else -> "Item"
             }
             tab.text = tabItem
@@ -72,9 +68,10 @@ class GifCategoriesFragment : Fragment() {
 
     override fun onDetach() {
         super.onDetach()
-        requireActivity().lifecycleScope.launch {
-            Glide.get(requireContext()).clearDiskCache()
+        CoroutineScope(Dispatchers.IO).launch {
+            context?.let {
+                Glide.get(it).clearDiskCache()
+            }
         }
     }
-
 }

@@ -1,10 +1,14 @@
-package com.example.gifapp.ui
+package com.example.gifapp.ui.adapters
 
+import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.Drawable
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.isVisible
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
@@ -17,7 +21,22 @@ import com.example.gifapp.model.Gif
 
 private const val TAG = "GifPageAdapter"
 
-class GifPageAdapter(private val data: MutableList<Gif>) : RecyclerView.Adapter<GifViewHolder>() {
+class GifPageAdapter(private var data: List<Gif>, private val context: Context) : RecyclerView.Adapter<GifViewHolder>() {
+
+    private var _positionLive = MutableLiveData<Int>()
+    val positionLive: LiveData<Int>
+    get() = _positionLive
+
+    private var _gifId: MutableLiveData<String> = MutableLiveData()
+    val gifId :LiveData<String>
+    get() = _gifId
+
+    private var counter = 0
+
+    fun updateList(list: List<Gif>){
+        this.data = list
+        this.notifyDataSetChanged()
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GifViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -59,8 +78,18 @@ class GifPageAdapter(private val data: MutableList<Gif>) : RecyclerView.Adapter<
                 .skipMemoryCache(true)
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .into(holder.image)
-        }
 
+            Log.i(TAG, "--> onBindViewHolder: ${holder.image.drawable}")
+        }
+        holder.image.setOnClickListener {
+            Log.i(TAG, "--> onBindViewHolder: ${holder.description}")
+            counter += 1
+            _positionLive.value = counter
+            _gifId.value = item.id
+            Log.i(TAG, "--> onBindViewHolder: GifId[${gifId.value}]")
+
+            Log.i(TAG, "--> onBindViewHolder: Live[${positionLive.value}]")
+        }
     }
 
     override fun getItemCount(): Int = data.size
