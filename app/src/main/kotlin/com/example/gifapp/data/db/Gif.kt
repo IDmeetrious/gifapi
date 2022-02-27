@@ -1,4 +1,4 @@
-package com.example.gifapp.model
+package com.example.gifapp.data.db
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

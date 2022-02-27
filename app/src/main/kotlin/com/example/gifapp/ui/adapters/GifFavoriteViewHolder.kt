@@ -9,10 +9,10 @@ import com.example.gifapp.R
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class GifFavoriteViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+
     val imageView: ImageView
     val description: TextView
     val selectBtn: FloatingActionButton
-
 
     init {
         itemView.let {
@@ -25,9 +25,7 @@ class GifFavoriteViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) 
     fun getItemDetails(): ItemDetailsLookup.ItemDetails<Long> {
         return object : ItemDetailsLookup.ItemDetails<Long>() {
             override fun getPosition(): Int = absoluteAdapterPosition
-            override fun getSelectionKey(): Long? = itemId
-
+            override fun getSelectionKey(): Long = itemId
         }
     }
-
 }

@@ -5,7 +5,7 @@ import android.net.Uri
 import android.os.Environment
 import androidx.core.content.FileProvider
 import com.example.gifapp.data.db.GifDatabase
-import com.example.gifapp.model.Gif
+import com.example.gifapp.data.db.Gif
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow

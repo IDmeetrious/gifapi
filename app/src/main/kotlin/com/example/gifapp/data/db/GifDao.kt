@@ -1,10 +1,10 @@
 package com.example.gifapp.data.db
 
 import androidx.room.*
-import com.example.gifapp.model.Gif
 
 @Dao
 interface GifDao {
+
     @Query("SELECT * FROM gif")
     fun getAll(): List<Gif>
 

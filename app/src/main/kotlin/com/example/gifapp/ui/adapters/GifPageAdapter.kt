@@ -3,7 +3,6 @@ package com.example.gifapp.ui.adapters
 import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.Drawable
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.isVisible
@@ -17,30 +16,28 @@ import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import com.example.gifapp.R
-import com.example.gifapp.model.Gif
+import com.example.gifapp.data.db.Gif
 
-private const val TAG = "GifPageAdapter"
-
-class GifPageAdapter(private var data: List<Gif>, private val context: Context) : RecyclerView.Adapter<GifViewHolder>() {
+class GifPageAdapter(private var data: List<Gif>, private val context: Context) :
+    RecyclerView.Adapter<GifViewHolder>() {
 
     private var _positionLive = MutableLiveData<Int>()
     val positionLive: LiveData<Int>
-    get() = _positionLive
+        get() = _positionLive
 
     private var _gifId: MutableLiveData<String> = MutableLiveData()
-    val gifId :LiveData<String>
-    get() = _gifId
+    val gifId: LiveData<String>
+        get() = _gifId
 
     private var counter = 0
 
-    fun updateList(list: List<Gif>){
+    fun updateList(list: List<Gif>) {
         this.data = list
         this.notifyDataSetChanged()
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GifViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.fragment_gif, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.fragment_gif, parent, false)
         return GifViewHolder(view)
     }
 
@@ -78,17 +75,12 @@ class GifPageAdapter(private var data: List<Gif>, private val context: Context) 
                 .skipMemoryCache(true)
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .into(holder.image)
-
-            Log.i(TAG, "--> onBindViewHolder: ${holder.image.drawable}")
         }
+
         holder.image.setOnClickListener {
-            Log.i(TAG, "--> onBindViewHolder: ${holder.description}")
             counter += 1
             _positionLive.value = counter
             _gifId.value = item.id
-            Log.i(TAG, "--> onBindViewHolder: GifId[${gifId.value}]")
-
-            Log.i(TAG, "--> onBindViewHolder: Live[${positionLive.value}]")
         }
     }
 

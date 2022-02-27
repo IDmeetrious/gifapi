@@ -13,7 +13,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager2.widget.ViewPager2
 import com.example.gifapp.R
 import com.example.gifapp.data.FileRepository
-import com.example.gifapp.model.Gif
+import com.example.gifapp.data.db.Gif
 import com.example.gifapp.ui.adapters.GifPageAdapter
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import java.io.File
@@ -108,14 +108,13 @@ class GifPageFragment : Fragment() {
         context?.let {
             val file = File(it.getExternalFilesDir(Environment.DIRECTORY_PICTURES), "${gif.id}.gif")
             val uri = FileProvider.getUriForFile(it, AUTHORITY, file)
-            val description = gif.description
 
             val intent = Intent().apply {
                 action = Intent.ACTION_SEND
                 type = "video/*"
-                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 putExtra(Intent.EXTRA_STREAM, uri)
-                putExtra(Intent.EXTRA_TEXT, description)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                putExtra(Intent.EXTRA_TEXT, gif.description)
             }
             startActivity(intent)
         }
@@ -123,7 +122,6 @@ class GifPageFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        // Refresh like button state due availability in favorite list
         viewModel.setLikeBtnState(viewModel.getFavorite(gif))
     }
 

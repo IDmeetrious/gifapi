@@ -1,7 +1,6 @@
 package com.example.gifapp.ui
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,26 +15,17 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-private const val TAG = "GifCategoriesFragment"
-
 class GifCategoriesFragment : NetworkReceiverFragment() {
 
     private lateinit var categoriesAdapter: GifCategoriesAdapter
     private lateinit var viewPager: ViewPager2
     private lateinit var tabs: TabLayout
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        val mView = inflater.inflate(R.layout.fragment_gif_categories, container, false)
-        mView.apply {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+        inflater.inflate(R.layout.fragment_gif_categories, container, false).apply {
             viewPager = findViewById(R.id.tab_viewpager)
             tabs = findViewById(R.id.tab_layout)
         }
-        return mView
-    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         categoriesAdapter = GifCategoriesAdapter(this)
@@ -48,22 +38,7 @@ class GifCategoriesFragment : NetworkReceiverFragment() {
                 else -> "Item"
             }
             tab.text = tabItem
-            Log.i(TAG, "--> onTabCreated: ${tab.text}")
         }.attach()
-
-        tabs.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
-            override fun onTabSelected(tab: TabLayout.Tab?) {
-                Log.i(TAG, "--> onTabSelected: ${tab?.text}")
-            }
-
-            override fun onTabUnselected(tab: TabLayout.Tab?) {
-                Log.i(TAG, "--> onTabUnselected: ${tab?.text}")
-            }
-
-            override fun onTabReselected(tab: TabLayout.Tab?) {
-                Log.i(TAG, "--> onTabReselected: ${tab?.text}")
-            }
-        })
     }
 
     override fun onDetach() {
